@@ -53,10 +53,10 @@ class TextManager:
         )
 
     def isSONG_LIST(self, text) -> bool:
-        return True if "곡목" in text else False
+        return "곡목" in text
 
     def isMENT_GUIDE(self, text) -> bool:
-        return True if "멘트" in text else False
+        return "멘트" in text
 
     def classifySONG_TITLE(self, text):
         self.songs = [
@@ -64,16 +64,16 @@ class TextManager:
         ]
 
     def isNeed(self, text) -> bool:
-        return True if "밴드" in text or "인도자" in text or "불참" in text else False
+        return "밴드" in text or "인도자" in text or "불참" in text
 
     def isSONG_TITLE(self, text) -> bool:
-        return True if bool(re.search(self.patternSongTitle, text)) else False
+        return bool(re.search(self.patternSongTitle, text))
 
     def isLYRICS_GUIDE(self, text) -> bool:
-        return True if "가사" in text else False
+        return "가사" in text
 
     def isINTERLUDE(self, text) -> bool:
-        return True if "간주" in text else False
+        return "간주" in text
 
     def isMENT_OPENING(self, text) -> bool:
-        return True if "오프닝 멘트" in text or "오프닝멘트" in text else False
+        return "오프닝 멘트" in text or "오프닝멘트" in text
