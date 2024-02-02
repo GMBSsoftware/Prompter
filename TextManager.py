@@ -13,6 +13,7 @@ class TextManager:
         self.patternSongTitle = r"(\d[).]|1️⃣|2️⃣|3️⃣|4️⃣|5️⃣|6️⃣|7️⃣).+(?=\n|$)"
         self.isMent = False
         self.isLyrics = False
+        self.isOpeningMent = False
 
     def splitText(self, text):
         splitedTexts = [t.strip() for t in text.split("\n\n") if t.strip()]
@@ -25,6 +26,9 @@ class TextManager:
             if self.isSONG_LIST(i):
                 self.classifySONG_TITLE(i)
                 text.setTextType(TextType.SONG_LIST)
+            elif self.isMENT_OPENING(i):
+                text.setTextType(TextType.MENT_OPENING)
+                self.isOpeningMent = True
             elif self.isMENT_GUIDE(i):
                 text.setTextType(TextType.MENT_GUIDE)
                 self.isMent = True
@@ -70,3 +74,6 @@ class TextManager:
 
     def isINTERLUDE(self, text) -> bool:
         return True if "간주" in text else False
+
+    def isMENT_OPENING(self, text) -> bool:
+        return True if "오프닝 멘트" in text or "오프닝멘트" in text else False

@@ -5,6 +5,7 @@ class TextType(Enum):
     FILE_NAME = auto()
     MENT = auto()
     MENT_GUIDE = auto()
+    MENT_OPENING = auto()
     SONG_LIST = auto()
     SONG_TITLE = auto()
     LYRICS = auto()
