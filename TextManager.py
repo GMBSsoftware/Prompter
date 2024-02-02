@@ -11,6 +11,8 @@ class TextManager:
         self.patternFileName1 = r"경배(\s*?)찬양"
         self.patternFileName2 = r"경배와(\s*?)찬양"
         self.patternSongTitle = r"(\d[).]|1️⃣|2️⃣|3️⃣|4️⃣|5️⃣|6️⃣|7️⃣).+(?=\n|$)"
+        self.isMent = False
+        self.isLyrics = False
 
     def splitText(self, text):
         splitedTexts = [t.strip() for t in text.split("\n\n") if t.strip()]
@@ -25,6 +27,7 @@ class TextManager:
                 text.setTextType(TextType.SONG_LIST)
             elif self.isMENT_GUIDE(i):
                 text.setTextType(TextType.MENT_GUIDE)
+                self.isMent = True
             elif self.isFILE_NAME(i):
                 text.setTextType(TextType.FILE_NAME)
             elif self.isNeed(i):
@@ -33,6 +36,9 @@ class TextManager:
                 text.setTextType(TextType.SONG_TITLE)
             elif self.isLYRICS_GUIDE(i):
                 text.setTextType(TextType.LYRICS_GUIDE)
+                self.isLyrics = True
+            elif self.isINTERLUDE(i):
+                text.setTextType(TextType.INTERLUDE)
             texts.append(text)
         return texts
 
@@ -61,3 +67,6 @@ class TextManager:
 
     def isLYRICS_GUIDE(self, text) -> bool:
         return True if "가사" in text else False
+
+    def isINTERLUDE(self, text) -> bool:
+        return True if "간주" in text else False

@@ -9,4 +9,4 @@ class TextType(Enum):
     SONG_TITLE = auto()
     LYRICS = auto()
     LYRICS_GUIDE = auto()
-    BRIDGE = auto()
+    INTERLUDE = auto()
