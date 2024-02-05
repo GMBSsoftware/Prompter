@@ -24,7 +24,7 @@ class TextManager:
         for i in splitedTexts:
             text = Text(i)
             if self.isSONG_LIST(i):
-                self.classifySONG_TITLE(i)
+                self.songs = self.classifySONG_TITLE(i)
                 text.setTextType(TextType.SONG_LIST)
             elif self.isMENT_OPENING(i):
                 text.setTextType(TextType.MENT_OPENING)
@@ -59,9 +59,8 @@ class TextManager:
         return "멘트" in text
 
     def classifySONG_TITLE(self, text):
-        self.songs = [
-            match.strip() for match in re.findall(self.patternSongTitle, text)
-        ]
+        songs = [match.strip() for match in re.findall(self.patternSongTitle, text)]
+        return songs
 
     def isNeed(self, text) -> bool:
         return "밴드" in text or "인도자" in text or "불참" in text
