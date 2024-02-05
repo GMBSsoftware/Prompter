@@ -41,7 +41,7 @@ class TextManager:
                 continue
             elif self.isFILE_NAME(i):
                 text.setTextType(TextType.FILE_NAME)
-            elif self.isNeed(i):
+            elif self.isNotNeed(i):
                 continue
             elif self.isSONG_TITLE(i):
                 text.setTextType(TextType.SONG_TITLE)
@@ -80,7 +80,7 @@ class TextManager:
         songs = [match.strip() for match in re.findall(self.patternSongTitle, text)]
         return songs
 
-    def isNeed(self, text) -> bool:
+    def isNotNeed(self, text) -> bool:
         return "밴드" in text or "인도자" in text or "불참" in text
 
     def isSONG_TITLE(self, text) -> bool:
