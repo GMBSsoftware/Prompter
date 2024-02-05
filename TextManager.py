@@ -7,10 +7,12 @@ import logging
 class TextManager:
     def __init__(self):
         self.songs = list()
+
         self.patternDate = r"\d?\d[월](\s??)\d?\d[일]"
         self.patternFileName1 = r"경배(\s*?)찬양"
         self.patternFileName2 = r"경배와(\s*?)찬양"
         self.patternSongTitle = r"(\d[).]|1️⃣|2️⃣|3️⃣|4️⃣|5️⃣|6️⃣|7️⃣).+(?=\n|$)"
+
         self.isMent = False
         self.isLyrics = False
         self.isOpeningMent = False
@@ -30,8 +32,13 @@ class TextManager:
                 text.setTextType(TextType.MENT_OPENING)
                 self.isOpeningMent = True
             elif self.isMENT_GUIDE(i):
+                text = Text(i[: i.find(":")].strip())
                 text.setTextType(TextType.MENT_GUIDE)
-                self.isMent = True
+                texts.append(text)
+                text = Text(i[i.find(":") :].strip())
+                text.setTextType(TextType.MENT)
+                texts.append(text)
+                continue
             elif self.isFILE_NAME(i):
                 text.setTextType(TextType.FILE_NAME)
             elif self.isNeed(i):
@@ -42,8 +49,13 @@ class TextManager:
                 self.isMent = False
                 self.isLyrics = True
             elif self.isLYRICS_GUIDE(i):
+                text = Text(i[: i.find("\n")].strip())
                 text.setTextType(TextType.LYRICS_GUIDE)
-                self.isLyrics = True
+                texts.append(text)
+                text = Text(i[i.find("\n") :].strip())
+                text.setTextType(TextType.LYRICS)
+                texts.append(text)
+                continue
             elif self.isINTERLUDE(i):
                 text.setTextType(TextType.INTERLUDE)
             else:
