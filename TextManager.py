@@ -38,12 +38,18 @@ class TextManager:
                 continue
             elif self.isSONG_TITLE(i):
                 text.setTextType(TextType.SONG_TITLE)
+                self.isOpeningMent = False
+                self.isMent = False
+                self.isLyrics = True
             elif self.isLYRICS_GUIDE(i):
                 text.setTextType(TextType.LYRICS_GUIDE)
                 self.isLyrics = True
             elif self.isINTERLUDE(i):
                 text.setTextType(TextType.INTERLUDE)
+            else:
+                text.setTextType(self.classifyMENTorLYRICS(i))
             texts.append(text)
+
         return texts
 
     def isFILE_NAME(self, text) -> bool:
@@ -76,3 +82,14 @@ class TextManager:
 
     def isMENT_OPENING(self, text) -> bool:
         return "오프닝 멘트" in text or "오프닝멘트" in text
+
+    def classifyMENTorLYRICS(self, text):
+        if Text(text).getTextType() == None:
+            if self.isOpeningMent:
+                return TextType.MENT
+            if self.isMent:
+                return TextType.MENT
+            if self.isLyrics:
+                return TextType.LYRICS
+        else:
+            return None

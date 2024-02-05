@@ -17,5 +17,8 @@ class Text:
     def setTextPosition(self, textPositionFromHorizon):
         self.textPositionFromHorizon = textPositionFromHorizon
 
+    def getTextType(self):
+        return self.textType
+
     def __str__(self):
         return f"Text:\n {self.text},\n, Type: {self.textType}, Color: {self.textColor}, Position: {self.textPositionFromHorizon}\n\n\n"
