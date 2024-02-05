@@ -29,13 +29,21 @@ class TextManager:
                 self.songs = self.classifySONG_TITLE(i)
                 text.setTextType(TextType.SONG_LIST)
             elif self.isMENT_OPENING(i):
+                text = Text(i[: i.rfind(":")].strip())
+                text.setTextType(TextType.MENT_OPENING)
+                texts.append(text)
+                self.isOpeningMent = True
+                text = Text(i[i.rfind(":") :].strip())
+                text.setTextType(TextType.MENT)
+                texts.append(text)
+                continue
                 text.setTextType(TextType.MENT_OPENING)
                 self.isOpeningMent = True
             elif self.isMENT_GUIDE(i):
-                text = Text(i[: i.find(":")].strip())
+                text = Text(i[: i.rfind(":")].strip())
                 text.setTextType(TextType.MENT_GUIDE)
                 texts.append(text)
-                text = Text(i[i.find(":") :].strip())
+                text = Text(i[i.rfind(":") :].strip())
                 text.setTextType(TextType.MENT)
                 texts.append(text)
                 continue
