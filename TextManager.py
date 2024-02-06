@@ -45,15 +45,15 @@ class TextManager:
                     text = Text(i[: i.rfind(":")].strip())
                     text.setTextType(TextType.MENT_GUIDE)
                     texts.append(text)
+                    text = Text(i[i.rfind(":") - 1 :].strip())
+                    text.setTextType(TextType.MENT)
+                    texts.append(text)
                     if (
                         len(i[i.find("\n") :].strip()) < 2
                     ):  # 멘트를 콜론 뒤에 쓰지 않고 공백 후에 쓴 경우
                         self.isMent = True
                         continue
                     else:
-                        text = Text(i[i.rfind(":") - 1 :].strip())
-                        text.setTextType(TextType.MENT)
-                        texts.append(text)
                         self.isMent = False
                         continue
                 else:  # (간주멘트 없음)
