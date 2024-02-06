@@ -12,6 +12,8 @@ class TextManager:
         self.patternFileName1 = r"경배(\s*?)찬양"
         self.patternFileName2 = r"경배와(\s*?)찬양"
         self.patternSongTitle = r"(\d[).]|1️⃣|2️⃣|3️⃣|4️⃣|5️⃣|6️⃣|7️⃣).+(?=\n|$)"
+        self.patternMentGuide = r".+(?=:)"
+        self.patternMent = r":\s+(.*)"
 
         self.isMent = False
         self.isLyrics = False
@@ -29,24 +31,36 @@ class TextManager:
                 self.songs = self.classifySONG_TITLE(i)
                 text.setTextType(TextType.SONG_LIST)
             elif self.isMENT_OPENING(i):
-                text = Text(i[: i.rfind(":")].strip())
-                text.setTextType(TextType.MENT_OPENING)
-                texts.append(text)
-                self.isOpeningMent = True
-                text = Text(i[i.rfind(":") :].strip())
-                text.setTextType(TextType.MENT)
-                texts.append(text)
-                continue
-                text.setTextType(TextType.MENT_OPENING)
-                self.isOpeningMent = True
+                if i.rfind(":") != -1:
+                    text = Text(i[: i.rfind(":")].strip())
+                    text.setTextType(TextType.MENT_OPENING)
+                    texts.append(text)
+                    text = Text(i[i.rfind(":") - 1 :].strip())
+                    text.setTextType(TextType.MENT)
+                    texts.append(text)
+                    self.isOpeningMent = True
+                    continue
             elif self.isMENT_GUIDE(i):
-                text = Text(i[: i.rfind(":")].strip())
-                text.setTextType(TextType.MENT_GUIDE)
-                texts.append(text)
-                text = Text(i[i.rfind(":") :].strip())
-                text.setTextType(TextType.MENT)
-                texts.append(text)
-                continue
+                if i.rfind(":") != -1:
+                    text = Text(i[: i.rfind(":")].strip())
+                    text.setTextType(TextType.MENT_GUIDE)
+                    texts.append(text)
+                    if (
+                        len(i[i.find("\n") :].strip()) < 2
+                    ):  # 멘트를 콜론 뒤에 쓰지 않고 공백 후에 쓴 경우
+                        self.isMent = True
+                        continue
+                    else:
+                        text = Text(i[i.rfind(":") - 1 :].strip())
+                        text.setTextType(TextType.MENT)
+                        texts.append(text)
+                        self.isMent = False
+                        continue
+                else:  # (간주멘트 없음)
+                    text = Text(i)
+                    text.setTextType(TextType.MENT)
+                    texts.append(text)
+                    continue
             elif self.isFILE_NAME(i):
                 text.setTextType(TextType.FILE_NAME)
             elif self.isNotNeed(i):
@@ -57,13 +71,22 @@ class TextManager:
                 self.isMent = False
                 self.isLyrics = True
             elif self.isLYRICS_GUIDE(i):
-                text = Text(i[: i.find("\n")].strip())
-                text.setTextType(TextType.LYRICS_GUIDE)
-                texts.append(text)
-                text = Text(i[i.find("\n") :].strip())
-                text.setTextType(TextType.LYRICS)
-                texts.append(text)
-                continue
+                if i.find("\n") != -1:
+                    text = Text(i[: i.find("\n")].strip())
+                    text.setTextType(TextType.LYRICS_GUIDE)
+                    texts.append(text)
+                    text = Text(i[i.find("\n") :].strip())
+                    text.setTextType(TextType.LYRICS)
+                    texts.append(text)
+                    self.isMent = False
+                    self.isLyrics = True
+                    continue
+                else:
+                    text.setTextType(TextType.LYRICS_GUIDE)
+                    texts.append(text)
+                    self.isMent = False
+                    self.isLyrics = True
+                    continue
             elif self.isINTERLUDE(i):
                 text.setTextType(TextType.INTERLUDE)
             else:
@@ -108,6 +131,7 @@ class TextManager:
             if self.isOpeningMent:
                 return TextType.MENT
             if self.isMent:
+                self.isMent = False
                 return TextType.MENT
             if self.isLyrics:
                 return TextType.LYRICS
