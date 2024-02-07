@@ -6,8 +6,6 @@ import logging
 
 class TextManager:
     def __init__(self):
-        self.songs = list()
-
         self.patternDate = r"\d?\d[월](\s??)\d?\d[일]"
         self.patternFileName1 = r"경배(\s*?)찬양"
         self.patternFileName2 = r"경배와(\s*?)찬양"
@@ -28,7 +26,6 @@ class TextManager:
         for i in splitedTexts:
             text = Text(i)
             if self.isSONG_LIST(i):
-                self.songs = self.classifySONG_TITLE(i)
                 text.setTextType(TextType.SONG_LIST)
             elif self.isMENT_OPENING(i):
                 if i.rfind(":") != -1:
@@ -106,10 +103,6 @@ class TextManager:
 
     def isMENT_GUIDE(self, text) -> bool:
         return "멘트" in text
-
-    def classifySONG_TITLE(self, text):
-        songs = [match.strip() for match in re.findall(self.patternSongTitle, text)]
-        return songs
 
     def isNotNeed(self, text) -> bool:
         return "밴드" in text or "인도자" in text or "불참" in text
