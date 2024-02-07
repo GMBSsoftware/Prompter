@@ -13,7 +13,6 @@ class TextManager:
 
         self.isMent = False
         self.isLyrics = False
-        self.isOpeningMent = False
 
     def splitText(self, text):
         splitedTexts = [t.strip() for t in text.split("\n\n") if t.strip()]
@@ -23,18 +22,8 @@ class TextManager:
         texts = []
         for i in splitedTexts:
             text = Text(i)
-            if self.isSONG_LIST(i):
-                text.setTextType(TextType.SONG_LIST)
-            elif self.isMENT_OPENING(i):
-                if i.rfind(":") != -1:
-                    text = Text(i[: i.rfind(":")].strip())
-                    text.setTextType(TextType.MENT_OPENING)
-                    texts.append(text)
-                    text = Text(i[i.rfind(":") - 1 :].strip())
-                    text.setTextType(TextType.MENT)
-                    texts.append(text)
-                    self.isOpeningMent = True
-                    continue
+            if self.isFILE_NAME(i):
+                text.setTextType(TextType.FILE_NAME)
             elif self.isMENT_GUIDE(i):
                 if i.rfind(":") != -1:
                     text = Text(i[: i.rfind(":")].strip())
@@ -56,8 +45,6 @@ class TextManager:
                     text.setTextType(TextType.MENT)
                     texts.append(text)
                     continue
-            elif self.isFILE_NAME(i):
-                text.setTextType(TextType.FILE_NAME)
             elif self.isNotNeed(i):
                 continue
             elif self.isSONG_TITLE(i):
@@ -93,14 +80,11 @@ class TextManager:
     def isFILE_NAME(self, text) -> bool:
         return bool(re.search(self.patternFileName, text))
 
-    def isSONG_LIST(self, text) -> bool:
-        return "곡목" in text
-
     def isMENT_GUIDE(self, text) -> bool:
         return "멘트" in text
 
     def isNotNeed(self, text) -> bool:
-        return "밴드" in text or "인도자" in text or "불참" in text
+        return "밴드" in text or "인도자" in text or "불참" in text or "곡목" in text
 
     def isSONG_TITLE(self, text) -> bool:
         return bool(re.search(self.patternSongTitle, text))
@@ -110,9 +94,6 @@ class TextManager:
 
     def isINTERLUDE(self, text) -> bool:
         return "간주" in text
-
-    def isMENT_OPENING(self, text) -> bool:
-        return "오프닝 멘트" in text or "오프닝멘트" in text
 
     def classifyMENTorLYRICS(self, text):
         if Text(text).getTextType() == None:
