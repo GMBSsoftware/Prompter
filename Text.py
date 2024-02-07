@@ -2,11 +2,10 @@ import TextType
 
 
 class Text:
-    def __init__(self, text):
+    def __init__(self, text, textType=None):
         self.text = text
-        self.textType = None
+        self.textType = textType
         self.textColor = None
-        self.textPositionFromHorizon = 0
 
     def setTextType(self, TextType):
         self.textType = TextType
