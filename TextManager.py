@@ -6,9 +6,7 @@ import logging
 
 class TextManager:
     def __init__(self):
-        self.patternDate = r"\d?\d[월](\s??)\d?\d[일]"
-        self.patternFileName1 = r"경배(\s*?)찬양"
-        self.patternFileName2 = r"경배와(\s*?)찬양"
+        self.patternFileName = r"\d{1,2}\s*월\s*\d{1,2}\s*일\s*.*예배.*경배.*찬양"
         self.patternSongTitle = r"(\d[).]|1️⃣|2️⃣|3️⃣|4️⃣|5️⃣|6️⃣|7️⃣).+(?=\n|$)"
         self.patternMentGuide = r".+(?=:)"
         self.patternMent = r":\s+(.*)"
@@ -93,10 +91,7 @@ class TextManager:
         return texts
 
     def isFILE_NAME(self, text) -> bool:
-        return bool(re.search(self.patternDate, text)) * (
-            bool(re.search(self.patternFileName1, text))
-            + bool(re.search(self.patternFileName2, text))
-        )
+        return bool(re.search(self.patternFileName, text))
 
     def isSONG_LIST(self, text) -> bool:
         return "곡목" in text
