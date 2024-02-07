@@ -20,4 +20,4 @@ class Text:
         return self.textType
 
     def __str__(self):
-        return f"Text:\n {self.text},\n, Type: {self.textType}, Color: {self.textColor}, Position: {self.textPositionFromHorizon}\n\n\n"
+        return f"Text:\n {self.text},\n, Type: {self.textType}, Color: {self.textColor}\n\n"
