@@ -19,5 +19,13 @@ class Text:
     def getTextType(self):
         return self.textType
 
+    def find(self, text):
+        return self.text.find(text)
+
     def __str__(self):
-        return f"Text:\n {self.text},\n, Type: {self.textType}, Color: {self.textColor}\n\n"
+        return self.text
+
+    def __repr__(self):
+        return (
+            f"Text:\n {self.text}\n Type: {self.textType}, Color: {self.textColor}\n\n"
+        )
