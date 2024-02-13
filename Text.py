@@ -1,6 +1,3 @@
-import TextType
-
-
 class Text:
     def __init__(self, text, textType=None):
         self.text = text
@@ -12,9 +9,6 @@ class Text:
 
     def setTextColor(self, textColor):
         self.textColor = textColor
-
-    def setTextPosition(self, textPositionFromHorizon):
-        self.textPositionFromHorizon = textPositionFromHorizon
 
     def getTextType(self):
         return self.textType

@@ -1,7 +1,7 @@
 from Text import Text
 from TextType import TextType
 import re
-import logging
+from TextSplitter import TextSplitter
 
 
 class TextManager:
@@ -15,10 +15,6 @@ class TextManager:
         self.isOpeningMent = False
         self.isMent = False
         self.isLyrics = False
-
-    def splitText(self, text):
-        splitedTexts = [t.strip() for t in text.split("\n\n") if t.strip()]
-        return splitedTexts
 
     def classifyText(self, splitedTexts):
         texts = []
