@@ -112,31 +112,36 @@ class TextManager:
         if textStr.find("\n") != -1:
             separatedTexts.append(
                 Text(
-                    textStr[: re.search(self.patternMentGuideEnter, textStr).end()],
+                    textStr[
+                        : re.search(self.patternMentGuideEnter, textStr).end()
+                    ].strip(),
                     TextType.MENT_GUIDE,
                 )
             )
             separatedTexts.append(
                 Text(
-                    textStr[re.search(self.patternMentGuideEnter, textStr).end() + 1 :],
+                    textStr[
+                        re.search(self.patternMentGuideEnter, textStr).end() + 1 :
+                    ].strip(),
                     TextType.MENT,
                 )
             )
-            # self.isOpeningMent = True
-            # self.isLyrics = False
-            # 아래는 0114 기준 디버깅함
             self.isMent = False
             self.isLyrics = True
         else:
             separatedTexts.append(
                 Text(
-                    textStr[: re.search(self.patternMentGuideColon, textStr).end()],
+                    textStr[
+                        : re.search(self.patternMentGuideColon, textStr).end()
+                    ].strip(),
                     TextType.MENT_GUIDE,
                 )
             )
             separatedTexts.append(
                 Text(
-                    text[re.search(self.patternMentGuideColon, text).end() :].strip(),
+                    textStr[
+                        re.search(self.patternMentGuideColon, textStr).end() :
+                    ].strip(),
                     TextType.MENT,
                 )
             )
@@ -166,19 +171,22 @@ class TextManager:
     def separateINTERLUDE(self, text):
         separatedTexts = []
         if bool(re.match(self.patternInterlude, text)):
-            separatedTexts.append(
-                Text(
-                    text[: re.match(self.patternInterlude, text).end()].strip(),
-                    TextType.INTERLUDE,
-                )
-            )
-            if len(text) == text[re.match(self.patternInterlude, text).end() :]:
+            if len(text[re.match(self.patternInterlude, text).end() :]) == 0:
                 separatedTexts.append(Text(text.strip(), TextType.INTERLUDE))
                 self.isLyrics = True
                 self.isMent = False
             else:
                 separatedTexts.append(
-                    text[re.match(self.patternInterlude, text).end() :].strip()
+                    Text(
+                        text[: re.match(self.patternInterlude, text).end()].strip(),
+                        TextType.INTERLUDE,
+                    )
+                )
+                separatedTexts.append(
+                    Text(
+                        text[re.match(self.patternInterlude, text).end() :].strip(),
+                        TextType.LYRICS,
+                    )
                 )
         else:
             separatedTexts.append(
