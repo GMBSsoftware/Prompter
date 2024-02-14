@@ -8,13 +8,15 @@ class TextSplitter:
         self.patternSongTitle = r"(\d[).]|1️⃣|2️⃣|3️⃣|4️⃣|5️⃣|6️⃣|7️⃣).+(?=\n|$)"
 
     def splitText(self, text):
-        splittedTexts = []
-        splittedTextsByNewLine = self.splitTextByNewLine(text)
-        for splittedText in splittedTextsByNewLine:
-            if self.isNotNeed(splittedText):
+        splittedTexts = self.splitTextByNewLine(text)
+        for texts in splittedTexts:
+            if self.isNotNeed(texts):
                 continue
-            if self.isMENT_GUIDEOpening(splittedText):
-                if splittedText.find("\n") != -1:
+            elif self.isSONG_TITLE(texts):
+                splittedTexts.insert(self.splitTextByEnter)
+                continue
+            elif self.isMENT_GUIDE(texts):
+                if texts.find("\n") != -1:
                     splittedTexts.extend(self.splitTextByEnter)
                 else:
                     splittedTexts.extend(self.splitTextByColon)
