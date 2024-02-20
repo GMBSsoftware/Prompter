@@ -4,8 +4,8 @@ class Text:
         self.textType = textType
         self.textColor = None
 
-    def setTextType(self, TextType):
-        self.textType = TextType
+    def setTextType(self, textType):
+        self.textType = textType
 
     def setTextColor(self, textColor):
         self.textColor = textColor

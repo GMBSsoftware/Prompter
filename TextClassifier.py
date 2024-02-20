@@ -5,61 +5,41 @@ import re
 
 class TextClassifier:
     def __init__(self):
+        self.classifiedTexts = []
+        self.isOpeningMent = False
+        self.isMent = False
+        self.isLyrics = False
         self.patternFileName = r"\d{1,2}\s*월\s*\d{1,2}\s*일\s*.*예배.*경배.*찬양"
-        self.patternSongTitle = r"(\d[).]|1️⃣|2️⃣|3️⃣|4️⃣|5️⃣|6️⃣|7️⃣).+(?=\n|$)"
+        self.patternSongTitle = r"(^\d[).]|1️⃣|2️⃣|3️⃣|4️⃣|5️⃣|6️⃣|7️⃣).+(?=\n|$)"
 
-    def classifyText(self, Texts):
-        for i in Texts:
-            if isinstance(i, Text):
-                if self.isFILE_NAME(i):
-                    i.setTextType(TextType.FILE_NAME)
-                elif self.isNotNeed(i):
-                    i.setTextType(None)
-                elif self.isLYRICS_GUIDE(i):
-                    i.setTextType(TextType.LYRICS_GUIDE)
-                    texts.extend(self.separateLYRICS_GUIDEandLYRICS(i))
-                    self.isLyrics = True
-                    self.isOpeningMent = False
-                    self.isMent = False
-                    continue
-                elif self.isMENT_GUIDE(i):
-                    if self.isMENT_GUIDEOpening(i):
-                        self.isOpeningMent = True
-                        self.isLyrics = False
-                    if self.isSONG_TITLE(i):
-                        separatedSONG_TITLETexts = self.separateSONG_TITLE(i)
-                        texts.append(separatedSONG_TITLETexts[0])
-                        texts.extend(
-                            self.separateMENT_GUIDEandMENT(separatedSONG_TITLETexts[1])
-                        )
-                        self.isLyrics = True
-                        self.isOpeningMent = False
-                        self.isMent = False
-                        continue
-                    elif self.isINTERLUDE(i):
-                        self.isMent = True
-                        separatedINTERLUDETexts = self.separateINTERLUDE(i)
-                        texts.append(separatedINTERLUDETexts[0])
-                        texts.extend(
-                            self.separateMENT_GUIDEandMENT(separatedINTERLUDETexts[1])
-                        )
-                        continue
-                    else:
-                        texts.extend(self.separateMENT_GUIDEandMENT(i))
-                        continue
-                elif self.isSONG_TITLE(i):
-                    text.setTextType(TextType.SONG_TITLE)
-                    self.isLyrics = True
-                    self.isOpeningMent = False
-                    self.isMent = False
-                elif self.isINTERLUDE(i):
-                    texts.extend(self.separateINTERLUDE(i))
-                    continue
-                else:
-                    text.setTextType(self.classifyMENTorLYRICS(i))
-                texts.append(text)
-
-        return texts
+    def classifyText(self, splittedTexts):
+        while splittedTexts:
+            text = Text(splittedTexts.pop(0))
+            if self.isFILE_NAME(str(text)):
+                text.setTextType(TextType.FILE_NAME)
+            elif self.isMENT_GUIDE_OPENING(str(text)):
+                text.setTextType(TextType.MENT_GUIDE)
+                self.isOpeningMent = True
+            elif self.isSONG_TITLE(str(text)):
+                text.setTextType(TextType.SONG_TITLE)
+                self.isOpeningMent = False
+                self.isLyrics = True
+            elif self.isLYRICS_GUIDE(str(text)):
+                text.setTextType(TextType.LYRICS_GUIDE)
+                self.isLyrics = True
+                self.isOpeningMent = False
+                self.isMent = False
+            elif self.isMENT_GUIDE(str(text)):
+                text.setTextType(TextType.MENT_GUIDE)
+                self.isLyrics = False
+                self.isOpeningMent = False
+                self.isMent = True
+            elif self.isINTERLUDE(str(text)) and "\n" not in str(text):
+                text.setTextType(TextType.INTERLUDE)
+            else:
+                text.setTextType(self.classifyMENTorLYRICS())
+            self.classifiedTexts.append(text)
+        return self.classifiedTexts
 
     def isFILE_NAME(self, text) -> bool:
         return bool(re.search(self.patternFileName, text))
@@ -67,7 +47,7 @@ class TextClassifier:
     def isMENT_GUIDE(self, text) -> bool:
         return "멘트" in text
 
-    def isMENT_GUIDEOpening(self, text) -> bool:
+    def isMENT_GUIDE_OPENING(self, text) -> bool:
         return "오프닝" in text
 
     def isNotNeed(self, text) -> bool:
@@ -81,3 +61,17 @@ class TextClassifier:
 
     def isINTERLUDE(self, text) -> bool:
         return "간주" in text
+
+    def classifyMENTorLYRICS(self):
+        if self.isOpeningMent:
+            self.isOpeningMent = True
+            self.isLyrics = False
+            return TextType.MENT
+        if self.isMent:
+            self.isMent = False
+            self.isLyrics = True
+            return TextType.MENT
+        if self.isLyrics:
+            self.isMent = False
+            self.isLyrics = True
+            return TextType.LYRICS
