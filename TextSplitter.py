@@ -130,11 +130,9 @@ class TextSplitter:
     def countLine(self, text):
         return text.count("\n") + 1
 
-    def splitOverMaxLine(self, text, maxLine):
-        return [
-            splittedTexts.strip()
-            for splittedTexts in text.split("\n", round(self.countLine(text) / 2))
-        ]
+    def splitOverMaxLine(self, text, Line):
+        lines = text.split("\n")
+        return "\n".join(lines[:Line]), "\n".join(lines[Line:])
 
 
 """ 글자수가 ppt에서 좌우 끝을 조절하면 알아서 바뀌어서 필요가 없을수도...?
