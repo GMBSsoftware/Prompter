@@ -10,11 +10,18 @@ class Text:
     def setTextColor(self, textColor):
         self.textColor = textColor
 
-    def getTextType(self):
+    def setTextTypeAndColor(self, textType, textColor):
+        self.setTextType(textType)
+        self.setTextColor(textColor)
+
+    def get_text(self):
+        return self.text
+
+    def get_text_type(self):
         return self.textType
 
-    def find(self, text):
-        return self.text.find(text)
+    def getColor(self):
+        return self.textColor
 
     def __str__(self):
         return self.text

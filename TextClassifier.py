@@ -1,5 +1,6 @@
 from Text import Text
-from TextType import TextType
+from TextSetting import TextType
+from TextSetting import TextColor
 import re
 
 
@@ -16,28 +17,29 @@ class TextClassifier:
         while splittedTexts:
             text = Text(splittedTexts.pop(0))
             if self.isFILE_NAME(str(text)):
-                text.setTextType(TextType.FILE_NAME)
+                text.setTextTypeAndColor(TextType.FILE_NAME, TextColor.WHITE)
             elif self.isMENT_GUIDE_OPENING(str(text)):
-                text.setTextType(TextType.MENT_GUIDE)
+                text.setTextTypeAndColor(TextType.MENT_GUIDE, TextColor.GREEN)
                 self.isOpeningMent = True
             elif self.isSONG_TITLE(str(text)):
-                text.setTextType(TextType.SONG_TITLE)
+                text.setTextTypeAndColor(TextType.SONG_TITLE, TextColor.BLUE)
                 self.isOpeningMent = False
                 self.isLyrics = True
             elif self.isLYRICS_GUIDE(str(text)):
-                text.setTextType(TextType.LYRICS_GUIDE)
+                text.setTextTypeAndColor(TextType.LYRICS_GUIDE, TextColor.WHITE)
                 self.isLyrics = True
                 self.isOpeningMent = False
                 self.isMent = False
             elif self.isMENT_GUIDE(str(text)):
-                text.setTextType(TextType.MENT_GUIDE)
+                text.setTextTypeAndColor(TextType.MENT_GUIDE, TextColor.GREEN)
                 self.isLyrics = False
                 self.isOpeningMent = False
                 self.isMent = True
             elif self.isINTERLUDE(str(text)) and "\n" not in str(text):
-                text.setTextType(TextType.INTERLUDE)
+                text.setTextTypeAndColor(TextType.INTERLUDE, TextColor.ORANGE)
             else:
-                text.setTextType(self.classifyMENTorLYRICS())
+                MENTorLYRICS = self.classifyMENTorLYRICS()
+                text.setTextTypeAndColor(MENTorLYRICS[0], MENTorLYRICS[1])
             self.classifiedTexts.append(text)
         return self.classifiedTexts
 
@@ -51,7 +53,13 @@ class TextClassifier:
         return "오프닝" in text
 
     def isNotNeed(self, text) -> bool:
-        return "밴드" in text or "인도자" in text or "불참" in text or "곡목" in text
+        return (
+            "밴드" in text
+            or "인도자" in text
+            or "불참" in text
+            or "곡목" in text
+            or "bgm" in text
+        )
 
     def isSONG_TITLE(self, text) -> bool:
         return bool(re.search(self.patternSongTitle, text))
@@ -66,12 +74,12 @@ class TextClassifier:
         if self.isOpeningMent:
             self.isOpeningMent = True
             self.isLyrics = False
-            return TextType.MENT
+            return TextType.MENT, TextColor.GREEN
         if self.isMent:
             self.isMent = False
             self.isLyrics = True
-            return TextType.MENT
+            return TextType.MENT, TextColor.GREEN
         if self.isLyrics:
             self.isMent = False
             self.isLyrics = True
-            return TextType.LYRICS
+            return TextType.LYRICS, TextColor.WHITE

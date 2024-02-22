@@ -1,5 +1,5 @@
-from Text import Text
 import re
+import math
 
 
 class TextSplitter:
@@ -9,6 +9,7 @@ class TextSplitter:
         self.patternMentGuide = r"멘트.*?\n"
         self.patternLyricsGuide = r"가사.*?\n"
         self.splittedTexts = []
+        self.maxLine = 5
 
     def splitText(self, rawText):
         texts = self.splitTextByNewLine(rawText)
@@ -43,6 +44,8 @@ class TextSplitter:
                 else:
                     self.splittedTexts.append(splittedText[0])
                     texts.insert(0, splittedText[1])
+            elif self.isOverMaxLine(text, self.maxLine):
+                self.splittedTexts.extend(self.splitTextOverMaxLine(text, self.maxLine))
             else:
                 self.splittedTexts.append(text)
         return self.splittedTexts
@@ -124,29 +127,26 @@ class TextSplitter:
     def isINTERLUDE(self, text) -> bool:
         return "간주" in text
 
-    def overMaxLine(self, text, maxLine) -> bool:
-        True if text.count("\n") + 1 > maxLine else False
+    def isOverMaxLine(self, text, maxLine) -> bool:
+        return True if text.count("\n") + 1 > maxLine else False
 
     def countLine(self, text):
         return text.count("\n") + 1
 
-    def splitOverMaxLine(self, text, Line):
+    def splitTextByLine(self, text, Line):  # n번째 줄 기준으로 나눠주는 메서드
         lines = text.split("\n")
         return "\n".join(lines[:Line]), "\n".join(lines[Line:])
 
-
-""" 글자수가 ppt에서 좌우 끝을 조절하면 알아서 바뀌어서 필요가 없을수도...?
-    def overMaxChar(self, text, maxCharsPerLine) -> bool:
-        return
-
-    def count_characters_per_line(text):
-    lines = text.split('\n')  # 줄 바꿈을 기준으로 텍스트를 나눔
-    char_counts = [len(line) for line in lines]  # 각 줄의 글자 수를 리스트로 저장
-    return char_counts
-
-# 예시 텍스트
-example_text = 이것은 예시 텍스트입니다. 여기에는 여러 줄이 있습니다.
-
-character_counts = count_characters_per_line(example_text)
-print("각 줄의 글자 수:", character_counts)
-"""
+    def splitTextOverMaxLine(
+        self, text, maxLine
+    ):  # 설정한 최대 줄 수 넘으면 분할하는 메서드
+        splittedTexts = []
+        while (
+            self.countLine(text) / maxLine > 2
+        ):  # 텍스트가 최대 줄 수의 2배 이상이어서 여러번 나누기
+            splittedTexts.append(self.splitTextByLine(text, maxLine)[0])
+            text = self.splitTextByLine(text, maxLine)[1]
+        splittedTexts.extend(  # 반토막 나누기
+            self.splitTextByLine(text, math.ceil(self.countLine(text) / 2))
+        )
+        return splittedTexts
