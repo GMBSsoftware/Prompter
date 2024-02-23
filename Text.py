@@ -20,7 +20,7 @@ class Text:
     def get_text_type(self):
         return self.textType
 
-    def getColor(self):
+    def get_text_color(self):
         return self.textColor
 
     def __str__(self):
