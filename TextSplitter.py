@@ -1,5 +1,6 @@
 import re
 import math
+from TextSetting import TextLengthInOneLine
 
 
 class TextSplitter:
@@ -15,9 +16,9 @@ class TextSplitter:
         texts = self.splitTextByNewLine(rawText)
         while texts:  # texts가 빌 때까지 반복
             text = texts.pop(0)
-            if self.isNotNeed(text):
-                continue
-            elif self.isFILE_NAME(text):
+            # if self.isNotNeed(text):
+            # continue
+            if self.isFILE_NAME(text):
                 self.splittedTexts.append(text)
                 continue
             elif self.isSONG_TITLE(text):
@@ -60,7 +61,7 @@ class TextSplitter:
             splittedTexts.strip() for splittedTexts in text.split("\n", 1)
         ]  # 처음 \n 기준으로 한 번 나눔.
 
-    # 엔터 있으면 "멘트" 단어 포함된 줄 엔터로 나누고 없으면 콜론으로 나누기
+    # 엔터 있고 "멘트" 단어 있으면 엔터로 나누고 없으면 콜론으로 나누기
     def splitTextByEnterOrColon(self, text):
         if "\n" in text and self.isMENT_GUIDE:
             return self.splitTextByMentGuide(text)
@@ -130,23 +131,53 @@ class TextSplitter:
     def isOverMaxLine(self, text, maxLine) -> bool:
         return True if text.count("\n") + 1 > maxLine else False
 
+    def isOverMaxLength(self, text, maxLine) -> bool:
+        # 공백 포함 글자수, 공백 제외 글자수의 평균 값.
+        return True if self.length(text) > maxLine else False
+
     def countLine(self, text):
         return text.count("\n") + 1
 
-    def splitTextByLine(self, text, Line):  # n번째 줄 기준으로 나눠주는 메서드
+    # n번째 줄 기준으로 나눠주는 메서드
+    def splitTextByLine(self, text, Line):
         lines = text.split("\n")
         return "\n".join(lines[:Line]), "\n".join(lines[Line:])
 
-    def splitTextOverMaxLine(
-        self, text, maxLine
-    ):  # 설정한 최대 줄 수 넘으면 분할하는 메서드
+    # 설정한 최대 줄 수 넘으면 분할하는 메서드
+    def splitTextOverMaxLine(self, text, maxLine):
         splittedTexts = []
-        while (
-            self.countLine(text) / maxLine > 2
-        ):  # 텍스트가 최대 줄 수의 2배 이상이어서 여러번 나누기
+        # 텍스트가 최대 줄 수의 2배 이상이어서 여러번 나누기
+        while self.countLine(text) / maxLine > 2:
             splittedTexts.append(self.splitTextByLine(text, maxLine)[0])
             text = self.splitTextByLine(text, maxLine)[1]
-        splittedTexts.extend(  # 반토막 나누기
+
+        # 반토막 나누기
+        splittedTexts.extend(
             self.splitTextByLine(text, math.ceil(self.countLine(text) / 2))
         )
         return splittedTexts
+
+    def splitTextOverMaxLength(self, text, maxLine):
+        splittedTexts = []
+
+        while text:
+            if self.length(text[: re.search(r"[.?!]").end() + 1]) > maxLine:
+                splittedTexts.append(text[: re.search(r"[.?!]").end() + 1])
+                text = text[re.search(r"[.?!]").end() + 1 :]
+
+        locations = re.finditer(r"[.?!]", text)
+        # 텍스트가 최대 줄 수의 2배 이상이어서 여러번 나누기
+        for i in range(0, len(locations)):
+            if self.length(text[: locations[i].end + 1]) > maxLine:
+                splittedTexts.append(text[: locations[i - 1].end + 1])
+
+        return splittedTexts
+
+    def length(self, text):
+        return round(
+            (
+                len(text) / TextLengthInOneLine.SIZE40
+                + len(text.replace(" ", "")) / TextLengthInOneLine.SIZE40
+            )
+            / 2
+        )
