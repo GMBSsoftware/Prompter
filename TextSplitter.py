@@ -16,10 +16,10 @@ class TextSplitter:
         texts = self.splitTextByNewLine(rawText)
         while texts:  # texts가 빌 때까지 반복
             text = texts.pop(0)
-            # if self.isNotNeed(text):
-            # continue
             if self.isFILE_NAME(text):
                 self.splittedTexts.append(text)
+                continue
+            elif self.isNotNeed(text):
                 continue
             elif self.isSONG_TITLE(text):
                 splittedText = self.splitTextByEnter(text)
@@ -46,7 +46,20 @@ class TextSplitter:
                     self.splittedTexts.append(splittedText[0])
                     texts.insert(0, splittedText[1])
             elif self.isOverMaxLine(text, self.maxLine):
-                self.splittedTexts.extend(self.splitTextOverMaxLine(text, self.maxLine))
+                splittedByLine = self.splitTextOverMaxLine(text, self.maxLine)
+
+                # 라인수 넘으면 잘랐는데 라인 글자 길이가 너무 긴 경우 1월 21일 오프닝 멘트
+                for i in splittedByLine:
+                    if self.isOverMaxLength(i, self.maxLine):
+                        self.splittedTexts.extend(
+                            self.splitTextOverMaxLength(i, self.maxLine)
+                        )
+                    else:
+                        self.splittedTexts.append(i)
+            elif self.isOverMaxLength(text, self.maxLine):
+                self.splittedTexts.extend(
+                    self.splitTextOverMaxLength(text, self.maxLine)
+                )
             else:
                 self.splittedTexts.append(text)
         return self.splittedTexts
@@ -57,19 +70,25 @@ class TextSplitter:
         ]  # 마지막 콜론을 기준으로 한 번만 나눔.
 
     def splitTextByEnter(self, text):  # TODO 이것도 필요한가?
-        return [
-            splittedTexts.strip() for splittedTexts in text.split("\n", 1)
-        ]  # 처음 \n 기준으로 한 번 나눔.
+        return text.split("\n", 1)
 
-    # 엔터 있고 "멘트" 단어 있으면 엔터로 나누고 없으면 콜론으로 나누기
+    # 엔터 있고 "멘트" 단어 있으면 엔터로 나누고, 콜론 있으면 콜론으로 나누고, "없음" 있으면 없음 기준으로 나누기
     def splitTextByEnterOrColon(self, text):
-        if "\n" in text and self.isMENT_GUIDE:
+        if "\n" in text and self.isMENT_GUIDE and self.length(text) <= self.maxLine:
+
             return self.splitTextByMentGuide(text)
         elif ":" in text and len(text[text.rfind(":") + 1 :].strip()) > 0:
             return [
                 text[: text.rfind(":") + 1].strip(),
                 text[text.rfind(":") + 1 :].strip(),
             ]
+        elif "없음" in text:
+            return [
+                text[: text.find("없음")].strip(),
+                text[text.find("없음") :].strip(),
+            ]
+        elif self.length(text) > self.maxLine:
+            return self.splitTextOverMaxLength(text, self.maxLine)
         else:
             return [text]
 
@@ -111,13 +130,7 @@ class TextSplitter:
         return "오프닝" in text
 
     def isNotNeed(self, text) -> bool:
-        return (
-            "밴드" in text
-            or "인도자" in text
-            or "불참" in text
-            or "곡목" in text
-            or "bgm" in text
-        )
+        return "곡목" in text or "인도자" in text
 
     def isSONG_TITLE(self, text) -> bool:
         return bool(re.search(self.patternSongTitle, text))
@@ -158,26 +171,38 @@ class TextSplitter:
         return splittedTexts
 
     def splitTextOverMaxLength(self, text, maxLine):
-        splittedTexts = []
+        # 분할된 문장들을 저장할 리스트
+        splittedtexts = []
+        # 현재 문장의 시작 인덱스
+        start = 0
 
-        while text:
-            if self.length(text[: re.search(r"[.?!]").end() + 1]) > maxLine:
-                splittedTexts.append(text[: re.search(r"[.?!]").end() + 1])
-                text = text[re.search(r"[.?!]").end() + 1 :]
+        # 텍스트를 순회하면서 마침표, 물음표, 느낌표를 기준으로 문장을 분할
+        for i in range(len(text)):
+            if text[i] in [".", "?", "!"]:
+                # 현재 인덱스까지의 부분문자열을 문장으로 추가
+                splittedtexts.append(text[start : i + 1].strip())
+                # 다음 문장의 시작 인덱스 설정
+                start = i + 1
+        splittedtexts.append(text[start:].strip())
 
-        locations = re.finditer(r"[.?!]", text)
-        # 텍스트가 최대 줄 수의 2배 이상이어서 여러번 나누기
-        for i in range(0, len(locations)):
-            if self.length(text[: locations[i].end + 1]) > maxLine:
-                splittedTexts.append(text[: locations[i - 1].end + 1])
-
-        return splittedTexts
+        texts = []
+        joined_text = ""
+        for i in range(len(splittedtexts)):
+            if len(splittedtexts[i]) < self.length(splittedtexts[i]):
+                print(".?!이외에 추가로 분할 필요")
+            elif self.length(joined_text + splittedtexts[i]) > 5:
+                texts.append(joined_text)
+                joined_text = splittedtexts[i]
+            else:
+                joined_text += splittedtexts[i]
+        texts.append(joined_text)
+        return texts
 
     def length(self, text):
         return round(
             (
-                len(text) / TextLengthInOneLine.SIZE40
-                + len(text.replace(" ", "")) / TextLengthInOneLine.SIZE40
+                len(text) / TextLengthInOneLine.SIZE40.value
+                + len(text.replace(" ", "")) / TextLengthInOneLine.SIZE40.value
             )
             / 2
         )

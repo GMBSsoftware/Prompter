@@ -7,9 +7,10 @@ import re
 class TextClassifier:
     def __init__(self):
         self.classifiedTexts = []
-        self.isOpeningMent = False
+        self.isOpeningMent = True
         self.isMent = False
         self.isLyrics = False
+        self.is_before_opening_ment = True
         self.patternFileName = r"\d{1,2}\s*월\s*\d{1,2}\s*일\s*.*예배.*경배.*찬양"
         self.patternSongTitle = r"(^\d[).]|1️⃣|2️⃣|3️⃣|4️⃣|5️⃣|6️⃣|7️⃣).+(?=\n|$)"
 
@@ -21,6 +22,7 @@ class TextClassifier:
             elif self.isMENT_GUIDE_OPENING(str(text)):
                 text.setTextTypeAndColor(TextType.MENT_GUIDE, TextColor.GREEN)
                 self.isOpeningMent = True
+                self.is_before_opening_ment = False
             elif self.isSONG_TITLE(str(text)):
                 text.setTextTypeAndColor(TextType.SONG_TITLE, TextColor.BLUE)
                 self.isOpeningMent = False
@@ -35,9 +37,14 @@ class TextClassifier:
                 self.isLyrics = False
                 self.isOpeningMent = False
                 self.isMent = True
+                if "없음" in str(text):
+                    self.isMent = False
+                    self.isLyrics = True
             elif self.isINTERLUDE(str(text)) and "\n" not in str(text):
                 text.setTextTypeAndColor(TextType.INTERLUDE, TextColor.ORANGE)
             else:
+                if self.is_before_opening_ment:
+                    continue
                 MENTorLYRICS = self.classifyMENTorLYRICS()
                 text.setTextTypeAndColor(MENTorLYRICS[0], MENTorLYRICS[1])
             self.classifiedTexts.append(text)

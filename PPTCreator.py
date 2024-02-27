@@ -4,7 +4,10 @@ from pptx.dml.color import RGBColor
 from Text import Text
 from TextSetting import TextType
 from TextSetting import TextColor
+from TextSetting import TextLengthInOneLine
+from TextSplitter import TextSplitter
 import os
+import re
 
 
 class PPTCreator:
@@ -12,6 +15,9 @@ class PPTCreator:
         self.prs = Presentation()
         self.set_slide_layout()
         self.font = "옥션고딕B"
+        self.size = 40
+        self.textSplitter = TextSplitter()
+        self.patternSongTitle = r"(^\d[).]|1️⃣|2️⃣|3️⃣|4️⃣|5️⃣|6️⃣|7️⃣).+(?=\n|$)"
 
     def generate_PPT(self, file_name):
         # 프레젠테이션 파일 저장
@@ -30,6 +36,8 @@ class PPTCreator:
                 slide = self.add_new_slide()
             if Text.get_text_type() == TextType.MENT_GUIDE:
                 self.join_text(slide, Text)
+                if "없음" in Text.get_text():
+                    self.enter_new_line(slide)
             if Text.get_text_type() == TextType.MENT:
                 self.join_text(slide, Text)
                 slides.append(slide)
@@ -45,9 +53,12 @@ class PPTCreator:
                 self.join_text(slide, Text)
             if Text.get_text_type() == TextType.INTERLUDE:
                 self.join_text(slide, Text)
-                self.enter(slide)
+                self.enter_new_line(slide)
+
         previews = self.get_previews(self.prs)
         self.add_previews(slides, previews)
+
+        self.slide_end(slides[-1])
 
         self.generate_PPT(file_name)
         # return slides
@@ -101,16 +112,31 @@ class PPTCreator:
         run = p.add_run()
         run.text = Text.get_text()
         run.font.name = self.font
+        run.font.size = Pt(self.size)
         run.font.color.rgb = Text.get_text_color().value
 
-    def join_text_2(self, slide, text):
+    def join_text_last_line(self, slide, text):
         title_shape = slide.shapes.title
         title_text_frame = title_shape.text_frame
         p = title_text_frame.paragraphs[-1]  # 마지막 단락 선택
         run = p.add_run()
         run.text = text
         run.font.name = self.font
-        run.font.color.rgb = RGBColor(255, 255, 0)
+        run.font.size = Pt(self.size)
+        run.font.color.rgb = TextColor.YELLOW.value
+
+    def join_text_end(self, slide, text):
+        title_shape = slide.shapes.title
+        title_text_frame = title_shape.text_frame
+        p = title_text_frame.paragraphs[-1]  # 마지막 단락 선택
+        run = p.add_run()
+        run.text = text
+        run.font.name = self.font
+        run.font.size = Pt(self.size)
+        if "마무리" in text:
+            run.font.color.rgb = TextColor.RED.value
+        else:
+            run.font.color.rgb = TextColor.YELLOW.value
 
     def get_previews(self, prs):
         previews = []
@@ -118,10 +144,51 @@ class PPTCreator:
             title_shape = slide.shapes.title
             text = title_shape.text_frame.text
             first_line = text.split("\n")[0]
-            previews.append("- " + first_line.strip() + " -")
+
+            # 곡목이면
+            if bool(re.search(self.patternSongTitle, first_line)):
+                previews.append("- " + first_line.strip() + " -")
+            elif "멘트" in first_line:
+                if "없음" in first_line:
+                    previews.append("- 멘트 x -")
+                else:
+                    previews.append("- 멘트 o -")
+                if "마무리" in first_line:
+                    previews.append("- 마무리" + previews.pop()[1:])
+                elif "간주" in first_line:
+                    previews.append("- 간주" + previews.pop()[1:])
+
+            # 공백 제외 텍스트가 1줄 넘어가면 그냥 "멘트"라고 표시
+            elif (
+                len(first_line.replace(" ", "")) / TextLengthInOneLine.SIZE40.value > 1
+            ):
+                previews.append("- 멘트 -")
+            else:
+                previews.append("- " + first_line.strip() + " -")
         return previews
 
     def add_previews(self, slides, previews):
         for i in range(1, len(slides) - 1):
             self.enter_new_line(slides[i])
-            self.join_text_2(slides[i], previews[i + 1])
+
+            # 마지막 프리뷰 빨간 글자
+            if i == len(slides) - 2:
+                self.join_text_end(slides[i], previews[i + 1])
+                return
+
+            self.join_text_last_line(slides[i], previews[i + 1])
+
+    def slide_end(self, slide):
+        title_shape = slide.shapes.title
+        p = title_shape.text_frame.paragraphs[-1]  # 마지막 단락 선택
+        if "마무리" in p.text:
+            for run in p.runs:
+                run.font.color.rgb = TextColor.RED.value
+        else:
+            run = p.add_run()
+            run.text = "\n\n"
+            run = p.add_run()
+            run.text = "끝"
+            run.font.name = self.font
+            run.font.size = Pt(self.size)
+            run.font.color.rgb = TextColor.RED.value
