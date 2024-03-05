@@ -1,6 +1,8 @@
 from enum import Enum, auto
 from pptx.dml.color import RGBColor
 
+# pyinstaller --onefile --add-data "C:\Users\cbs97\AppData\Local\Programs\Python\Python311\Lib\site-packages\pptx\templates;pptx\templates" main.py
+
 
 # 이 클래스 없어도 되지 않나?
 class TextType(Enum):

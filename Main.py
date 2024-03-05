@@ -1,7 +1,6 @@
-from TextManager import TextManager
-from Setting import TextSplitter
-from Setting import TextClassifier
-from Setting import PPTCreator
+from TextSplitter import TextSplitter
+from TextClassifier import TextClassifier
+from PPTCreator import PPTCreator
 import sys
 import os
 
@@ -16,7 +15,7 @@ print(
 
 text_splitter = TextSplitter()
 text_classifier = TextClassifier()
-
+"""
 splitted_texts = text_splitter.split_text(sys.stdin.read())
 
 classified_texts = text_classifier.classify_text(splitted_texts)
@@ -33,4 +32,11 @@ print("바탕화면에 PPT 파일을 생성했습니다.")
 print("\n=================================================\n")
 os.system("pause")
 
-# pyinstaller --onefile --add-data "C:\Users\cbs97\AppData\Local\Programs\Python\Python311\Lib\site-packages\pptx\templates;pptx\templates" main.py
+
+"""
+
+splitted_texts = text_splitter.split_text_by_type(sys.stdin.read())
+classified_texts = text_classifier.classify_text_new(splitted_texts)
+print("\n=========================================================\n")
+for i in classified_texts:
+    print(repr(i))

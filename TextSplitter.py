@@ -170,3 +170,50 @@ class TextSplitter:
             )
             / 2
         )
+
+    # 전주, 간주, 가사가이드, 곡 제목 분리 메서드
+    def split_text_by_type(self, raw_text):
+        # \n\n 기준으로 모두 분할. (사이에 공백 포함된 경우도 분할)
+        raw_texts = [t.strip() for t in re.split(r"\n\s*?\n", raw_text) if t.strip()]
+        splitted_texts = []
+        for text in raw_texts:
+            # 해당 문단이 한 줄인 경우 분리 필요 없음.
+            if "\n" not in text:
+                splitted_texts.append(text)
+            # 해당 문단이 여러 줄인 경우 분리
+            else:
+                splitted_texts_by_line = [
+                    t.strip() for t in text.split("\n") if t.strip()
+                ]
+                splitted_text_by_type = ""
+                for line in splitted_texts_by_line:
+                    # 멘트가 아닌 전주, 간주, 가사 있으면 분리
+                    if (
+                        any(keyword in line for keyword in ["전주", "간주", "가사"])
+                        and "멘트" not in line
+                    ):
+                        if len(splitted_text_by_type) != 0:
+                            splitted_texts.append(splitted_text_by_type.strip())
+                        splitted_texts.append(line)
+                        splitted_text_by_type = ""
+                    # 곡목 분리
+                    elif bool(re.search(Pattern.song_title, line)):
+                        if len(splitted_text_by_type) != 0:
+                            splitted_texts.append(splitted_text_by_type.strip())
+                        splitted_texts.append(line)
+                        splitted_text_by_type = ""
+                    # 전주, 간주, 가사 아닌 내용은 다시 원래대로 합치기
+                    else:
+                        splitted_text_by_type += line + "\n"
+                if len(splitted_text_by_type) != 0:
+                    splitted_texts.append(splitted_text_by_type.strip())
+        return splitted_texts
+
+    def split_text_detail(self, splitted_texts):
+        return_text=[]
+        while splitted_texts:
+            text=splitted_texts.pop(0)
+            if "없음" in text:
+                return_text.append(text)
+            else:
+                
