@@ -1,6 +1,7 @@
 from TextSplitter import TextSplitter
 from TextClassifier import TextClassifier
 from PPTCreator import PPTCreator
+from Setting import PPT
 import sys
 import os
 
@@ -35,8 +36,9 @@ os.system("pause")
 
 """
 
-splitted_texts = text_splitter.split_text_by_type(sys.stdin.read())
-classified_texts = text_classifier.classify_text_new(splitted_texts)
+splitted_texts = text_splitter.split_text(sys.stdin.read())
+classified_texts = text_classifier.classify_text(splitted_texts)
+texts = text_splitter.split_long_texts(classified_texts, PPT.max_line)
 print("\n=========================================================\n")
-for i in classified_texts:
+for i in texts:
     print(repr(i))

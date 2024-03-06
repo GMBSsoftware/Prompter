@@ -4,7 +4,6 @@ from pptx.dml.color import RGBColor
 # pyinstaller --onefile --add-data "C:\Users\cbs97\AppData\Local\Programs\Python\Python311\Lib\site-packages\pptx\templates;pptx\templates" main.py
 
 
-# 이 클래스 없어도 되지 않나?
 class TextType(Enum):
     FILE_NAME = auto()
     MENT = auto()
@@ -19,8 +18,8 @@ class TextColor:
     RED = RGBColor(255, 0, 0)
     ORANGE = RGBColor(255, 192, 0)
     YELLOW = RGBColor(255, 255, 0)
-    GREEN = RGBColor(0, 176, 80)
-    BLUE = RGBColor(0, 255, 255)
+    GREEN = RGBColor(102, 255, 51)
+    BLUE = RGBColor(101, 255, 255)
     WHITE = RGBColor(255, 255, 255)
 
 
@@ -54,4 +53,4 @@ class Pattern:
 class PPT:
     max_line = 5
     font = "옥션고딕 B"
-    size = 40
+    size = 46

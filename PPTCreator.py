@@ -29,11 +29,11 @@ class PPTCreator:
             if Text.get_text_type() == TextType.FILE_NAME:
                 self.join_text(slide, Text)
                 slides.append(slide)
-                file_name = Text.get_text()
+                file_name = str(Text)
                 slide = self.add_new_slide()
             if Text.get_text_type() == TextType.MENT_GUIDE:
                 self.join_text(slide, Text)
-                if "없음" in Text.get_text():
+                if "없음" in str(Text):
                     self.enter_new_line(slide)
             if Text.get_text_type() == TextType.MENT:
                 self.join_text(slide, Text)
@@ -103,9 +103,7 @@ class PPTCreator:
         run = p.add_run()
         # 분류 다 된 후 Text 클래스로 전달 받을 때
         if isinstance(text, Text):
-            self.set_text(
-                run, text.get_text(), PPT.font, Pt(PPT.size), text.get_text_color()
-            )
+            self.set_text(run, str(text), PPT.font, Pt(PPT.size), text.get_text_color())
         # 슬라이드 마지막 줄에 미리보기 추가할 때
         else:
             self.set_text(run, text, PPT.font, Pt(PPT.size), TextColor.YELLOW)

@@ -3,114 +3,13 @@ import math
 from Setting import TextLengthInOneLine
 from Setting import Pattern
 from Setting import PPT
+from Setting import Caption
+from Text import Text
 
 
 class TextSplitter:
     def __init__(self):
         self.splitted_texts = []
-        PPT.max_line = 5
-
-    def split_text(self, raw_text):
-        # \n\n 기준으로 모두 분할. (사이에 공백 포함된 경우도 분할)
-        texts = [t.strip() for t in re.split(r"\n\s*?\n", raw_text) if t.strip()]
-
-        while texts:  # texts가 빌 때까지 반복
-            text = texts.pop(0)
-
-            # 파일명
-            if bool(re.search(Pattern.file_name, text)):
-                self.splitted_texts.append(text)
-                continue
-
-            # 프롬프터에 안 들어가는 부분. (곡목 리스트, 인도자 및 싱어 구성)
-            elif "곡목" in text or "인도자" in text:
-                continue
-
-            # 곡목
-            elif bool(re.search(Pattern.song_title, text)):
-                splitted_text = text.split("\n", 1)
-                # \n\n으로 잘려서 곡목만 있는 경우
-                if len(splitted_text) == 1:
-                    self.splitted_texts.append(text)
-                    continue
-                # 곡목과 다른 텍스트가 붙어 있는 경우
-                else:
-                    self.splitted_texts.append(splitted_text[0])
-                    texts.insert(0, splitted_text[1])
-            elif "멘트" in text:
-                splitted_text = self.split_text_by_enter_or_colon(text)
-                if len(splitted_text) == 1:  # \n\n으로 잘려서 멘트 가이드만 있는 경우
-                    self.splitted_texts.append(text)
-                    continue
-                else:
-                    self.splitted_texts.append(splitted_text[0])
-                    texts.insert(0, splitted_text[1])
-            elif "가사" in text:
-                splitted_text = self.split_text_by_lyrics_guide(text)
-                if len(splitted_text) == 1:  # \n\n으로 잘려서 가사 가이드만 있는 경우
-                    self.splitted_texts.append(text)
-                    continue
-                else:
-                    self.splitted_texts.append(splitted_text[0])
-                    texts.insert(0, splitted_text[1])
-
-            # 최대 줄 수 넘으면 분할
-            elif text.count("\n") + 1 > PPT.max_line:
-                splitted_by_line = self.split_text_over_max_line(text, PPT.max_line)
-
-                # 라인수 넘어서 잘랐는데 한 라인 글자 길이가 너무 긴 경우
-                for i in splitted_by_line:
-                    if self.length(i) > PPT.max_line:
-                        self.splitted_texts.extend(
-                            self.split_text_over_max_length(i, PPT.max_line)
-                        )
-                    else:
-                        self.splitted_texts.append(i)
-            elif self.length(text) > PPT.max_line:
-                self.splitted_texts.extend(
-                    self.split_text_over_max_length(text, PPT.max_line)
-                )
-            else:
-                self.splitted_texts.append(text)
-        return self.splitted_texts
-
-    # 엔터 있고 "멘트" 단어 있으면 엔터로 나누고, 콜론 있으면 콜론으로 나누고, "없음" 있으면 없음 기준으로 나누기
-    def split_text_by_enter_or_colon(self, text):
-        if "\n" in text and "멘트" in text and self.length(text) <= PPT.max_line:
-            return self.split_text_by_ment_guide(text)
-        elif ":" in text and len(text[text.rfind(":") + 1 :].strip()) > 0:
-            return [
-                text[: text.rfind(":") + 1].strip(),
-                text[text.rfind(":") + 1 :].strip(),
-            ]
-        elif "없음" in text:
-            return [
-                text[: text.find("없음")].strip(),
-                text[text.find("없음") :].strip(),
-            ]
-        elif self.length(text) > PPT.max_line:
-            return self.split_text_over_max_length(text, PPT.max_line)
-        else:
-            return [text]
-
-    def split_text_by_ment_guide(self, text):
-        return (
-            text[: re.search(Pattern.ment_guide, text).end()].strip(),
-            text[re.search(Pattern.ment_guide, text).end() :].strip(),
-        )
-
-    def split_text_by_lyrics_guide(self, text):
-        if "\n" in text:
-            splitted_texts = []
-            splitted_texts.append(
-                text[: re.search(Pattern.lyrics_guide, text).end()].strip()
-            )
-            splitted_texts.append(
-                text[re.search(Pattern.lyrics_guide, text).end() :].strip()
-            )
-            return splitted_texts
-        else:
-            return [text]
 
     def count_line(self, text):
         return text.count("\n") + 1
@@ -123,15 +22,31 @@ class TextSplitter:
     # 설정한 최대 줄 수 넘으면 분할하는 메서드
     def split_text_over_max_line(self, text, max_line):
         splitted_texts = []
+        is_Text = False
+
+        # 텍스트 클래스 인스턴스일때
+        if isinstance(text, Text):
+            return_splitted_Texts = []
+            text_type = text.get_text_type()
+            text = str(text)
+            is_Text = True
+
         # 텍스트가 최대 줄 수의 2배 이상이어서 여러번 나누기
         while self.count_line(text) / max_line > 2:
             splitted_texts.append(self.split_text_by_line(text, max_line)[0])
             text = self.split_text_by_line(text, max_line)[1]
-
-        # 반토막 나누기
+        if self.count_line(text) <= max_line:
+            splitted_texts.append(text)
+            return splitted_texts
         splitted_texts.extend(
             self.split_text_by_line(text, math.ceil(self.count_line(text) / 2))
         )
+
+        # 텍스트 클래스 인스턴스일때
+        if is_Text:
+            for t in splitted_texts:
+                return_splitted_Texts.append(Text(t, text_type))
+            return return_splitted_Texts
         return splitted_texts
 
     def split_text_over_max_length(self, text, max_line):
@@ -171,49 +86,104 @@ class TextSplitter:
             / 2
         )
 
-    # 전주, 간주, 가사가이드, 곡 제목 분리 메서드
-    def split_text_by_type(self, raw_text):
+    def split_text_pharagraph(self, raw_text):
         # \n\n 기준으로 모두 분할. (사이에 공백 포함된 경우도 분할)
         raw_texts = [t.strip() for t in re.split(r"\n\s*?\n", raw_text) if t.strip()]
         splitted_texts = []
         for text in raw_texts:
+            # 나중에 곡목 리스트 작성된 부분 다르게 활용.
+            if "곡목" in text:
+                continue
             # 해당 문단이 한 줄인 경우 분리 필요 없음.
             if "\n" not in text:
                 splitted_texts.append(text)
-            # 해당 문단이 여러 줄인 경우 분리
+            # 해당 문단이 여러 줄인 경우 전주, 간주, 곡목 등 분리
             else:
-                splitted_texts_by_line = [
-                    t.strip() for t in text.split("\n") if t.strip()
-                ]
-                splitted_text_by_type = ""
-                for line in splitted_texts_by_line:
-                    # 멘트가 아닌 전주, 간주, 가사 있으면 분리
-                    if (
-                        any(keyword in line for keyword in ["전주", "간주", "가사"])
-                        and "멘트" not in line
-                    ):
-                        if len(splitted_text_by_type) != 0:
-                            splitted_texts.append(splitted_text_by_type.strip())
-                        splitted_texts.append(line)
-                        splitted_text_by_type = ""
-                    # 곡목 분리
-                    elif bool(re.search(Pattern.song_title, line)):
-                        if len(splitted_text_by_type) != 0:
-                            splitted_texts.append(splitted_text_by_type.strip())
-                        splitted_texts.append(line)
-                        splitted_text_by_type = ""
-                    # 전주, 간주, 가사 아닌 내용은 다시 원래대로 합치기
-                    else:
-                        splitted_text_by_type += line + "\n"
-                if len(splitted_text_by_type) != 0:
-                    splitted_texts.append(splitted_text_by_type.strip())
+                splitted_texts.extend(self.split_text_by_type(text))
         return splitted_texts
 
-    def split_text_detail(self, splitted_texts):
-        return_text=[]
-        while splitted_texts:
-            text=splitted_texts.pop(0)
-            if "없음" in text:
-                return_text.append(text)
+    # 전주, 간주, 가사가이드, 곡 제목 분리 메서드
+    def split_text_by_type(self, text):
+        splitted_texts = []
+        lines = [t.strip() for t in text.split("\n") if t.strip()]
+        splitted_text_by_type = ""
+        for line in lines:
+            # 멘트가 아닌 전주, 간주, 가사 있으면 분리
+            if (
+                any(keyword in line for keyword in ["전주", "간주", "가사"])
+                and "멘트" not in line
+            ):
+                if splitted_text_by_type.strip():
+                    splitted_texts.append(splitted_text_by_type.strip())
+                splitted_texts.append(line.strip())
+                splitted_text_by_type = ""
+            # 곡목 분리
+            elif bool(re.search(Pattern.song_title, line)):
+                if splitted_text_by_type.strip():
+                    splitted_texts.append(splitted_text_by_type.strip())
+                splitted_texts.append(line.strip())
+                splitted_text_by_type = ""
+            # 전주, 간주, 가사 아닌 내용은 다시 원래대로 합치기
             else:
-                
+                splitted_text_by_type += line + "\n"
+        if splitted_text_by_type.strip():
+            splitted_texts.append(splitted_text_by_type.strip())
+        return splitted_texts
+
+    # 문장 마지막 콜론, 세미콜론을 기준으로 나누는 메서드.
+    def split_text_by_colon_or_semicolon(self, text):
+        if ":" in text:
+            return [
+                text[: text.rfind(":") + 1].strip(),
+                text[text.rfind(":") + 1 :].strip(),
+            ]
+        elif ";" in text:
+            return [
+                text[: text.rfind(";") + 1].strip(),
+                text[text.rfind(";") + 1 :].strip(),
+            ]
+
+    # 멘트 표시와 멘트 내용 나누는 메서드.
+    def split_text_by_ment_guide(self, text):
+        lines = [t.strip() for t in text.split("\n") if t.strip()]
+        text_original = ""
+        return_text = []
+        for line in lines:
+            if "없음" in line:
+                text_original += line + "\n"
+            elif "멘트" in line:
+                if ":" in line or ";" in line:
+                    splitted_texts = self.split_text_by_colon_or_semicolon(line)
+                    return_text.append(splitted_texts[0])
+                    text_original += splitted_texts[1] + "\n"
+                else:
+                    return_text.append(line)
+            else:
+                text_original += line + "\n"
+
+        # text_original 내용 있으면
+        if text_original.strip():
+            return_text.append(text_original.strip())
+        return return_text
+
+    def split_text(self, text):
+        return_texts = []
+
+        # 곡목, 가사, 간주, 전주 분리
+        texts = self.split_text_pharagraph(text)
+
+        # 멘트 표시와 멘트 내용 분리
+        for t in texts:
+            return_texts.extend(self.split_text_by_ment_guide(t))
+
+        return return_texts
+
+    def split_long_texts(self, Texts, max_line):
+        return_Texts = []
+        while Texts:
+            Text = Texts.pop(0)
+            if self.count_line(str(Text)) > max_line:
+                return_Texts.extend(self.split_text_over_max_line(Text, max_line))
+                continue
+            return_Texts.append(Text)
+        return return_Texts

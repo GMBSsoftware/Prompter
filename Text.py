@@ -1,3 +1,7 @@
+from Setting import TextColor
+from Setting import TextType
+
+
 class Text:
     def __init__(self, text, text_type=None, text_color=None):
         self.text = text
@@ -6,16 +10,14 @@ class Text:
 
     def set_text_type(self, text_type):
         self.text_type = text_type
-
-    def set_text_color(self, text_color):
-        self.text_color = text_color
-
-    def set_text_type_and_color(self, text_type, text_color):
-        self.set_text_type(text_type)
-        self.set_text_color(text_color)
-
-    def get_text(self):
-        return self.text
+        if text_type == TextType.INTERLUDE or text_type == TextType.LYRICS_GUIDE:
+            self.text_color = TextColor.ORANGE
+        elif text_type == TextType.MENT or text_type == TextType.MENT_GUIDE:
+            self.text_color = TextColor.GREEN
+        elif text_type == TextType.SONG_TITLE:
+            self.text_color = TextColor.BLUE
+        else:
+            self.text_color = TextColor.WHITE
 
     def get_text_type(self):
         return self.text_type
