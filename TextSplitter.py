@@ -2,8 +2,6 @@ import re
 import math
 from Setting import TextLengthInOneLine
 from Setting import Pattern
-from Setting import PPT
-from Setting import Caption
 from Text import Text
 
 

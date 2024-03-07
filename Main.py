@@ -4,6 +4,7 @@ from PPTCreator import PPTCreator
 from Setting import PPT
 import sys
 import os
+from CaptionCreator import CaptionCreator
 
 print("\n==================== 찬양 프롬프터 제작 프로그램 ====================")
 print("\t\t     - Made by 광명방송국 개발팀 -\n\n")
@@ -16,6 +17,7 @@ print(
 
 text_splitter = TextSplitter()
 text_classifier = TextClassifier()
+caption_creator = CaptionCreator()
 """
 splitted_texts = text_splitter.split_text(sys.stdin.read())
 
@@ -38,7 +40,12 @@ os.system("pause")
 
 splitted_texts = text_splitter.split_text(sys.stdin.read())
 classified_texts = text_classifier.classify_text(splitted_texts)
+"""
 texts = text_splitter.split_long_texts(classified_texts, PPT.max_line)
 print("\n=========================================================\n")
 for i in texts:
     print(repr(i))
+"""
+print("\n=========================================================\n")
+text = caption_creator.join_Texts(caption_creator.slice_text(classified_texts))
+print(text)
