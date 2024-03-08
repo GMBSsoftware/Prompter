@@ -1,7 +1,8 @@
 import re
 import math
-from Setting import TextLengthInOneLine
+from Setting import PPT
 from Setting import Pattern
+from Setting import TextType
 from Text import Text
 
 
@@ -71,18 +72,12 @@ class TextSplitter:
                 texts.append(joined_text)
                 joined_text = splitted_texts[i]
             else:
-                joined_text += splitted_texts[i]
+                joined_text += splitted_texts[i] + " "
         texts.append(joined_text)
         return texts
 
     def length(self, text):
-        return round(
-            (
-                len(text) / TextLengthInOneLine.SIZE40.value
-                + len(text.replace(" ", "")) / TextLengthInOneLine.SIZE40.value
-            )
-            / 2
-        )
+        return round((len(text) / PPT.size + len(text.replace(" ", "")) / PPT.size) / 2)
 
     def split_text_pharagraph(self, raw_text):
         # \n\n 기준으로 모두 분할. (사이에 공백 포함된 경우도 분할)
@@ -179,9 +174,20 @@ class TextSplitter:
     def split_long_texts(self, Texts, max_line):
         return_Texts = []
         while Texts:
-            Text = Texts.pop(0)
-            if self.count_line(str(Text)) > max_line:
-                return_Texts.extend(self.split_text_over_max_line(Text, max_line))
+            text = Texts.pop(0)
+            if text.get_text_type() != TextType.LYRICS:
+                splitted_text = []
+                text_type = text.get_text_type()
+                splitted_text.extend(
+                    self.split_text_over_max_length(str(text), max_line)
+                )
+                for i in splitted_text:
+                    return_Texts.append(Text(i, text_type))
                 continue
-            return_Texts.append(Text)
+            elif self.count_line(str(text)) > max_line:
+                return_Texts.extend(self.split_text_over_max_line(text, max_line))
+                continue
+            else:
+                print("오류")
+            return_Texts.append(text)
         return return_Texts

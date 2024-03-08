@@ -9,6 +9,7 @@ import re
 class CaptionCreator:
     def __init__(self) -> None:
         self.text_splitter = TextSplitter()
+        self.file_name = ""
 
     def slice_text(self, Texts):
         return_Texts = []
@@ -30,6 +31,8 @@ class CaptionCreator:
                 or Text.get_text_type() == TextType.MENT_GUIDE_INTRO
             ):
                 return_Texts.append(Text)
+            elif Text.get_text_type() == TextType.FILE_NAME:
+                self.file_name = str(Text)
         return return_Texts
 
     def join_Texts(self, Texts):
@@ -70,9 +73,31 @@ class CaptionCreator:
             return_text += line.strip() + "\n"
         return return_text
 
+    def split_text_over_max_length(self, text):
+        return_text = []
+        # 공백을 기준으로 텍스트를 분할
+        words = text.split()
+
+        # 분할된 텍스트의 길이를 확인하여 절반 지점 계산
+        half_length = len(words) // 2
+
+        # 분할된 텍스트를 절반으로 자르기. 각 단어 공백 유지.
+        return_text.append(" ".join(words[:half_length]))
+        return_text.append(" ".join(words[half_length:]))
+
+        return return_text
+
     def create_caption(self, texts):
-        return self.remove_text(
-            self.join_Texts(self.slice_text(texts)),
-            Pattern.caption,
-            Caption.remove_list,
+        self.create_memo(
+            self.remove_text(
+                self.join_Texts(self.slice_text(texts)),
+                Pattern.caption,
+                Caption.remove_list,
+            ),
+            self.file_name,
         )
+
+    def create_memo(content, file_name):
+        # 메모 내용을 파일에 쓰기
+        with open(file_name + ".txt", "w") as file:
+            file.write(content)

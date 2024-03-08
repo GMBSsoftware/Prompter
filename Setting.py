@@ -57,11 +57,13 @@ class Pattern:
 class PPT:
     max_line = 5
     font = "옥션고딕 B"
-    size = 46
+    size = TextLengthInOneLine.SIZE46.value
 
 
 class Caption:
     max_line = 2
+    max_char_no_space = 17
+    max_char_has_space = 22
     remove_list = [
         "다같이",
         "다 같이",
