@@ -31,7 +31,10 @@ class PPTCreator:
                 slides.append(slide)
                 file_name = str(Text)
                 slide = self.add_new_slide()
-            if Text.get_text_type() == TextType.MENT_GUIDE:
+            if (
+                Text.get_text_type() == TextType.MENT_GUIDE
+                or Text.get_text_type() == TextType.MENT_GUIDE_INTRO
+            ):
                 self.join_text(slide, Text)
                 if "없음" in str(Text):
                     self.enter_new_line(slide)
@@ -48,7 +51,11 @@ class PPTCreator:
                 slide = self.add_new_slide()
             if Text.get_text_type() == TextType.LYRICS_GUIDE:
                 self.join_text(slide, Text)
-            if Text.get_text_type() == TextType.INTERLUDE:
+            if (
+                Text.get_text_type() == TextType.INTERLUDE
+                or Text.get_text_type() == TextType.INTRO
+                or Text.get_text_type() == TextType.ELSE
+            ):
                 self.join_text(slide, Text)
                 self.enter_new_line(slide)
 

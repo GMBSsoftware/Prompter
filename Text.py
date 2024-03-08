@@ -10,9 +10,18 @@ class Text:
 
     def set_text_type(self, text_type):
         self.text_type = text_type
-        if text_type == TextType.INTERLUDE or text_type == TextType.LYRICS_GUIDE:
+        if (
+            text_type == TextType.INTERLUDE
+            or text_type == TextType.LYRICS_GUIDE
+            or text_type == TextType.INTRO
+            or text_type == TextType.ELSE
+        ):
             self.text_color = TextColor.ORANGE
-        elif text_type == TextType.MENT or text_type == TextType.MENT_GUIDE:
+        elif (
+            text_type == TextType.MENT
+            or text_type == TextType.MENT_GUIDE
+            or text_type == TextType.MENT_GUIDE_INTRO
+        ):
             self.text_color = TextColor.GREEN
         elif text_type == TextType.SONG_TITLE:
             self.text_color = TextColor.BLUE

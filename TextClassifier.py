@@ -12,6 +12,7 @@ class TextClassifier:
         self.is_ment = False
         self.is_lyrics = False
         self.is_before_opening_ment = True
+        self.is_intro_ment = False
 
     def classify_MENT_or_LYRICS(self):
         if self.is_opening_ment:
@@ -43,6 +44,7 @@ class TextClassifier:
                 text.set_text_type(TextType.SONG_TITLE)
                 self.is_opening_ment = False
                 self.is_lyrics = True
+                self.is_intro_ment = True
             elif "가사" in str(text):
                 text.set_text_type(TextType.LYRICS_GUIDE)
                 self.is_lyrics = True
@@ -53,12 +55,20 @@ class TextClassifier:
                 self.is_ment = False
                 self.is_lyrics = True
             elif "멘트" in str(text):
-                text.set_text_type(TextType.MENT_GUIDE)
+                if self.is_intro_ment:
+                    text.set_text_type(TextType.MENT_GUIDE_INTRO)
+                    self.is_intro_ment = False
+                else:
+                    text.set_text_type(TextType.MENT_GUIDE)
                 self.is_lyrics = False
                 self.is_opening_ment = False
                 self.is_ment = True
-            elif "간주" in str(text) or "전주" in str(text) or "전조" in str(text):
+            elif "간주" in str(text):
                 text.set_text_type(TextType.INTERLUDE)
+            elif "전주" in str(text):
+                text.set_text_type(TextType.INTRO)
+            elif "전조" in str(text):
+                text.set_text_type(TextType.ELSE)
             else:
                 if self.is_before_opening_ment:
                     continue

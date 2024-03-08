@@ -47,5 +47,5 @@ for i in texts:
     print(repr(i))
 """
 print("\n=========================================================\n")
-text = caption_creator.join_Texts(caption_creator.slice_text(classified_texts))
+text = caption_creator.create_caption(classified_texts)
 print(text)
