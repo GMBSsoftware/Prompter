@@ -175,19 +175,21 @@ class TextSplitter:
         return_Texts = []
         while Texts:
             text = Texts.pop(0)
-            if text.get_text_type() != TextType.LYRICS:
-                splitted_text = []
-                text_type = text.get_text_type()
-                splitted_text.extend(
-                    self.split_text_over_max_length(str(text), max_line)
-                )
+            text_type=text.get_text_type()
+            text=str(text)
+            if text.find("\n"):
+                splitted_text=text.split("\n")
                 for i in splitted_text:
-                    return_Texts.append(Text(i, text_type))
-                continue
-            elif self.count_line(str(text)) > max_line:
-                return_Texts.extend(self.split_text_over_max_line(text, max_line))
-                continue
+                    if self.length(i)>PPT.max_line:
+                        t=self.split_text_over_max_length(i,PPT.max_line)
+                        for j in t:
+                            return_Texts.append(Text(j,text_type))
+                    else:
+                        return_Texts.append(Text(i,text_type))
             else:
-                print("오류")
-            return_Texts.append(text)
-        return return_Texts
+                if self.length(text)>PPT.max_line:
+                    texts=self.split_text_over_max_length(text,PPT.max_line)
+                    for j in texts:
+                        return_Texts.append(Text(j,text_type))
+                else:
+                    return_Texts.append(text)
