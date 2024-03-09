@@ -2,6 +2,7 @@ from enum import Enum, auto
 from pptx.dml.color import RGBColor
 
 # pyinstaller --onefile --add-data "C:\Users\cbs97\AppData\Local\Programs\Python\Python311\Lib\site-packages\pptx\templates;pptx\templates" main.py
+# pyinstaller --onefile --add-data "C:\Users\user\AppData\Local\Programs\Python\Python312\Lib\site-packages\pptx\templates;pptx\templates" main.py
 
 
 class TextType(Enum):
