@@ -23,6 +23,9 @@ splitted_texts = text_splitter.split_text(sys.stdin.read())
 
 classified_texts = text_classifier.classify_text(splitted_texts)
 
+print("\n===================분류된거============================\n")
+print(classified_texts)
+
 # print("\n=========================================================\n")
 # for i in classifiedTexts:
 #    print(repr(i))
@@ -37,6 +40,7 @@ type = input()
 
 if type == "1":
     texts = text_splitter.split_long_texts(classified_texts)
+    print("\n=======================길어서 잘린거=========================\n")
     print(texts)
     ppt = PPTCreator()
     ppt.create_slide(texts)

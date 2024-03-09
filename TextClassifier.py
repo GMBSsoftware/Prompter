@@ -26,6 +26,7 @@ class TextClassifier:
         if self.is_lyrics:
             self.is_ment = False
             self.is_lyrics = True
+            self.is_intro_ment = False
             return TextType.LYRICS
 
     def classify_text(self, splitted_texts):

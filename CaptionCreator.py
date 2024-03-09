@@ -44,15 +44,16 @@ class CaptionCreator:
             text = str(paragraph)
             if isinstance(paragraph, Text):
                 if paragraph.get_text_type() == TextType.SONG_TITLE:
-                    
+
                     if bool(re.search(r"\d\.",text)) or bool(re.search(r"\d\)",text)):
                         text = text[2:].strip()
                     # 숫자를 이모티콘으로 쓴 경우
                     else:
                         text = text[3:].strip()
 
-                    if text.find("("):
+                    if text.find("(")!=-1:
                         text=text[:text.find("(")]
+
                     return_text += "\n" + "♪ " + text + "\n" + "//" + "\n"
                 elif (
                     paragraph.get_text_type() == TextType.INTERLUDE
