@@ -50,6 +50,7 @@ class TextClassifier:
                 self.is_lyrics = True
                 self.is_opening_ment = False
                 self.is_ment = False
+                self.is_intro_ment = False
             elif "없음" in str(text):
                 text.set_text_type(TextType.MENT_GUIDE)
                 self.is_ment = False

@@ -3,10 +3,9 @@ from Setting import TextType
 
 
 class Text:
-    def __init__(self, text, text_type=None, text_color=None):
+    def __init__(self, text, text_type=None):
         self.text = text
-        self.text_type = text_type
-        self.text_color = text_color
+        self.set_text_type(text_type)
 
     def set_text_type(self, text_type):
         self.text_type = text_type

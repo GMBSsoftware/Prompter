@@ -36,9 +36,10 @@ print("\n===================================================================\n")
 type = input()
 
 if type == "1":
-    texts = text_splitter.split_long_texts(classified_texts, PPT.max_line)
+    texts = text_splitter.split_long_texts(classified_texts)
+    print(texts)
     ppt = PPTCreator()
-    ppt.create_slide(classified_texts)
+    ppt.create_slide(texts)
 
     print("\n==================== success ====================\n")
     print("바탕화면에 PPT 파일을 생성했습니다.")

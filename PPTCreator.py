@@ -36,8 +36,9 @@ class PPTCreator:
                 or Text.get_text_type() == TextType.MENT_GUIDE_INTRO
             ):
                 self.join_text(slide, Text)
+                self.enter(slide)
                 if "없음" in str(Text):
-                    self.enter_new_line(slide)
+                    self.enter(slide)
             if Text.get_text_type() == TextType.MENT:
                 self.join_text(slide, Text)
                 slides.append(slide)
@@ -61,7 +62,6 @@ class PPTCreator:
 
         previews = self.get_previews(self.prs)
         self.add_previews(slides, previews)
-
         self.slide_end(slides[-1])
 
         self.generate_PPT(file_name)
@@ -101,6 +101,11 @@ class PPTCreator:
         title_shape = slide.shapes.title
         title_text_frame = title_shape.text_frame
         title_text_frame.add_paragraph()
+        title_text_frame.add_paragraph()
+
+    def enter(self, slide):
+        title_shape = slide.shapes.title
+        title_text_frame = title_shape.text_frame
         title_text_frame.add_paragraph()
 
     def join_text(self, slide, text):
@@ -147,7 +152,7 @@ class PPTCreator:
 
             # 공백 제외 텍스트가 1줄 넘어가면 그냥 "멘트"라고 표시
             elif (
-                len(first_line.replace(" ", "")) / TextLengthInOneLine.SIZE40.value > 1
+                len(first_line.replace(" ", "")) / PPT.length_in_one_line > 1
             ):
                 previews.append("- 멘트 -")
             else:

@@ -4,6 +4,7 @@ from Setting import Pattern
 from TextSplitter import TextSplitter
 from Text import Text
 import re
+import os
 
 
 class CaptionCreator:
@@ -36,16 +37,22 @@ class CaptionCreator:
         return return_Texts
 
     def join_Texts(self, Texts):
+        print(Texts)
         return_text = ""
         while Texts:
             paragraph = Texts.pop(0)
             text = str(paragraph)
             if isinstance(paragraph, Text):
                 if paragraph.get_text_type() == TextType.SONG_TITLE:
-                    if "." in text:
-                        text = text[text.find(".") + 1 :].strip()
-                    elif ")" in text:
-                        text = text[text.find(")") + 1 :].strip()
+                    
+                    if bool(re.search(r"\d\.",text)) or bool(re.search(r"\d\)",text)):
+                        text = text[2:].strip()
+                    # 숫자를 이모티콘으로 쓴 경우
+                    else:
+                        text = text[3:].strip()
+
+                    if text.find("("):
+                        text=text[:text.find("(")]
                     return_text += "\n" + "♪ " + text + "\n" + "//" + "\n"
                 elif (
                     paragraph.get_text_type() == TextType.INTERLUDE
@@ -97,7 +104,10 @@ class CaptionCreator:
             self.file_name,
         )
 
-    def create_memo(content, file_name):
+    def create_memo(self,content, file_name):
+        desktop_directory = os.path.join(os.path.expanduser("~"), "Desktop")
+        # 파일 경로를 올바르게 결합합니다.
+        file_path = os.path.join(desktop_directory, file_name + ".txt")
         # 메모 내용을 파일에 쓰기
-        with open(file_name + ".txt", "w") as file:
+        with open(file_path, "w", encoding="utf-8") as file:
             file.write(content)

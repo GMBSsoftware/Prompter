@@ -57,7 +57,10 @@ class Pattern:
 class PPT:
     max_line = 5
     font = "옥션고딕 B"
-    size = TextLengthInOneLine.SIZE46.value
+    # 글자 크기
+    size = 46
+    # 글자 크기 기준 한 줄 최대 글자 수
+    length_in_one_line=TextLengthInOneLine.SIZE46.value
 
 
 class Caption:
