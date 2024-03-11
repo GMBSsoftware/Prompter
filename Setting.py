@@ -28,23 +28,24 @@ class TextColor:
 
 
 class TextLengthInOneLine(Enum):
-    SIZE30 = 31
-    SIZE32 = 29
-    SIZE34 = 27
-    SIZE36 = 26
-    SIZE38 = 24
+    # 옥션고딕 B 기준. 한 줄 최대 글자수 * 3 (utp-8은 한 글자가 3byte)
+    SIZE30 = 33 * 3
+    SIZE32 = 31 * 3
+    SIZE34 = 29 * 3
+    SIZE36 = 27 * 3
+    SIZE38 = 26 * 3
 
-    SIZE40 = 23
-    SIZE42 = 22
-    SIZE44 = 21
-    SIZE46 = 20
-    SIZE48 = 19
+    SIZE40 = 24 * 3
+    SIZE42 = 23 * 3
+    SIZE44 = 22 * 3
+    SIZE46 = 21 * 3
+    SIZE48 = 20 * 3
 
-    SIZE50 = 18
-    SIZE52 = 18
-    SIZE54 = 17
-    SIZE56 = 16
-    SIZE58 = 16
+    SIZE50 = 19 * 3
+    SIZE52 = 19 * 3
+    SIZE54 = 18 * 3
+    SIZE56 = 17 * 3
+    SIZE58 = 17 * 3
 
 
 class Pattern:
@@ -61,13 +62,12 @@ class PPT:
     # 글자 크기
     size = 46
     # 글자 크기 기준 한 줄 최대 글자 수
-    length_in_one_line=TextLengthInOneLine.SIZE46.value
+    max_byte_in_one_line = TextLengthInOneLine.SIZE46.value
 
 
 class Caption:
     max_line = 2
-    max_char_no_space = 17
-    max_char_has_space = 22
+    max_byte_in_one_line = 18 * 3  # 18글자 * 3byte (utp-8 한글)
     remove_list = [
         "다같이",
         "다 같이",

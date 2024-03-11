@@ -45,14 +45,14 @@ class CaptionCreator:
             if isinstance(paragraph, Text):
                 if paragraph.get_text_type() == TextType.SONG_TITLE:
 
-                    if bool(re.search(r"\d\.",text)) or bool(re.search(r"\d\)",text)):
+                    if bool(re.search(r"\d\.", text)) or bool(re.search(r"\d\)", text)):
                         text = text[2:].strip()
                     # 숫자를 이모티콘으로 쓴 경우
                     else:
                         text = text[3:].strip()
 
-                    if text.find("(")!=-1:
-                        text=text[:text.find("(")]
+                    if text.find("(") != -1:
+                        text = text[: text.find("(")]
 
                     return_text += "\n" + "♪ " + text + "\n" + "//" + "\n"
                 elif (
@@ -69,6 +69,8 @@ class CaptionCreator:
         return return_text
 
     def remove_text(self, lines, pattern, target_text_list):
+        if isinstance(lines, Text):
+            lines = str(lines)
         return_text = ""
         lines = lines.split("\n")
         for line in lines:
@@ -79,7 +81,7 @@ class CaptionCreator:
                     if any(target in t for target in target_text_list):
                         line = re.sub(pattern, "", line)
             return_text += line.strip() + "\n"
-        return return_text
+        return return_text.strip()
 
     def split_text_over_max_length(self, text):
         return_text = []
@@ -97,15 +99,24 @@ class CaptionCreator:
 
     def create_caption(self, texts):
         self.create_memo(
+            self.join_Texts(
+                self.slice_text(
+                    self.remove_text(texts, Pattern.caption, Caption.remove_list)
+                )
+            ),
+            self.file_name,
+        )
+        """
+        self.create_memo(
             self.remove_text(
                 self.join_Texts(self.slice_text(texts)),
                 Pattern.caption,
                 Caption.remove_list,
             ),
             self.file_name,
-        )
+        )"""
 
-    def create_memo(self,content, file_name):
+    def create_memo(self, content, file_name):
         desktop_directory = os.path.join(os.path.expanduser("~"), "Desktop")
         # 파일 경로를 올바르게 결합합니다.
         file_path = os.path.join(desktop_directory, file_name + ".txt")

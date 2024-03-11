@@ -19,7 +19,7 @@ class TextSplitter:
         return "\n".join(lines[:Line]), "\n".join(lines[Line:])
 
     # 설정한 최대 줄 수 넘으면 분할하는 메서드
-    def split_text_over_max_line(self, text,max_line):
+    def split_text_over_max_line(self, text, max_line):
         splitted_texts = []
         is_Text = False
 
@@ -36,10 +36,10 @@ class TextSplitter:
             text = self.split_text_by_line(text, max_line)[1]
         if self.count_line(text) <= max_line:
             splitted_texts.append(text)
-            return splitted_texts
-        splitted_texts.extend(
-            self.split_text_by_line(text, math.ceil(self.count_line(text) / 2))
-        )
+        else:
+            splitted_texts.extend(
+                self.split_text_by_line(text, math.ceil(self.count_line(text) / 2))
+            )
 
         # 텍스트 클래스 인스턴스일때
         if is_Text:
@@ -48,13 +48,14 @@ class TextSplitter:
             return return_splitted_Texts
         return splitted_texts
 
+    """
     def split_text_over_max_length(self, text):
         # 분할된 문장들을 저장할 리스트
         splitted_texts = []
         # 현재 문장의 시작 인덱스
         start = 0
 
-        max_line=PPT.max_line
+        max_line = PPT.max_line
 
         # 텍스트를 순회하면서 마침표, 물음표, 느낌표를 기준으로 문장을 분할
         for i in range(len(text)):
@@ -79,7 +80,17 @@ class TextSplitter:
         return texts
 
     def length(self, text):
-        return round((len(text) / PPT.length_in_one_line + len(text.replace(" ", "")) / PPT.length_in_one_line) / 2)
+        return round(
+            (
+                len(text) / PPT.max_byte_in_one_line
+                + len(text.replace(" ", "")) / PPT.max_byte_in_one_line
+            )
+            / 2
+        )
+    """
+
+    def byte(self, string):
+        return len(string.encode("utf-8"))
 
     def split_text_pharagraph(self, raw_text):
         # \n\n 기준으로 모두 분할. (사이에 공백 포함된 경우도 분할)
@@ -173,46 +184,90 @@ class TextSplitter:
 
         return return_texts
 
+    """
     def split_long_texts(self, Texts):
         return_Texts = []
         while Texts:
             text = Texts.pop(0)
-            text_type=text.get_text_type()
-            text=str(text)
+            text_type = text.get_text_type()
+            text = str(text)
             # 한 줄씩 처리하고 다시 붙일 때 사용
-            return_text=""
+            return_text = ""
 
             # 길어서 나뉘어 졌을 때 사용
-            return_texts=[]
+            return_texts = []
 
             # 한 줄로 나누기
-            texts=text.split("\n")
+            texts = text.split("\n")
 
             # 한 줄씩 처리
             for t in texts:
                 # 설정한 줄 수 초과해서 나누기
-                if self.length(t)>PPT.max_line:
-                    splitted_t=self.split_text_over_max_length(t)
+                if self.length(t) > PPT.max_line:
+                    splitted_t = self.split_text_over_max_length(t)
                     for i in splitted_t:
                         return_texts.append(i.strip())
                     continue
                 # 설정한 줄 수 이하이니 그대로 붙이기
                 else:
-                    return_text+=t+"\n"
-            
-            if len(return_text)!=0:
+                    return_text += t + "\n"
+
+            if len(return_text) != 0:
                 return_texts.append(return_text.strip())
-            
 
             for j in return_texts:
                 # 설정한 줄 수 이상이어서 한 문단 이상으로 나누기
-                if self.count_line(j)>PPT.max_line:
-                    splitted_text=self.split_text_over_max_line(j.strip(),PPT.max_line)
+                if self.count_line(j) > PPT.max_line:
+                    splitted_text = self.split_text_over_max_line(
+                        j.strip(), PPT.max_line
+                    )
                     for k in splitted_text:
-                        return_Texts.append(Text(k.strip(),text_type))
-                
+                        return_Texts.append(Text(k.strip(), text_type))
+
                 # 설정한 줄 수 이하여서 그대로 넣기
                 else:
-                    return_Texts.append(Text(j.strip(),text_type))
+                    return_Texts.append(Text(j.strip(), text_type))
 
+        return return_Texts"""
+
+    def split_text_over_line(self, text, max_byte):
+        formatted_lines = []
+        for line in text.split("\n"):
+            words = line.split()
+            current_line = ""
+            for word in words:
+                if (
+                    len(current_line.encode("utf-8")) + len(word.encode("utf-8")) + 1
+                    <= max_byte
+                ):
+                    current_line += word + " "
+                else:
+                    formatted_lines.append(current_line.rstrip())
+                    current_line = word + " "
+            formatted_lines.append(current_line.rstrip())
+        return "\n".join(formatted_lines)
+
+    def split_long_texts(self, Texts):
+        print(
+            "=========================================긴거 자르기 전임==============="
+        )
+        print(Texts)
+        return_Texts = []
+        splitted_texts = []
+        while Texts:
+            text = Texts.pop(0)
+            text_type = text.get_text_type()
+            text = str(text)
+            splitted_texts.append(
+                Text(
+                    self.split_text_over_line(text, PPT.max_byte_in_one_line).strip(),
+                    text_type,
+                )
+            )
+        print("========================잘랐고 텍스트 형으로 생성 전임===============")
+        print(splitted_texts)
+        while splitted_texts:
+            t = splitted_texts.pop(0)
+            splitted_T = self.split_text_over_max_line(t, PPT.max_line)
+            return_Texts.extend(splitted_T)
         return return_Texts

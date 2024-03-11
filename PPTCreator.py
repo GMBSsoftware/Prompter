@@ -151,9 +151,7 @@ class PPTCreator:
                     previews.append("- 간주" + previews.pop()[1:])
 
             # 공백 제외 텍스트가 1줄 넘어가면 그냥 "멘트"라고 표시
-            elif (
-                len(first_line.replace(" ", "")) / PPT.length_in_one_line > 1
-            ):
+            elif len(first_line.replace(" ", "")) / PPT.max_byte_in_one_line > 1:
                 previews.append("- 멘트 -")
             else:
                 previews.append("- " + first_line.strip() + " -")
