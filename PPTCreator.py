@@ -4,7 +4,6 @@ from pptx.dml.color import RGBColor
 from Text import Text
 from Setting import TextType
 from Setting import TextColor
-from Setting import TextLengthInOneLine
 from Setting import Pattern
 from Setting import PPT
 import os
