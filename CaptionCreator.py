@@ -3,6 +3,7 @@ from Setting import Caption
 from Setting import Pattern
 from TextSplitter import TextSplitter
 from Text import Text
+from Util import Util
 import re
 import os
 
@@ -11,33 +12,29 @@ class CaptionCreator:
     def __init__(self) -> None:
         self.text_splitter = TextSplitter()
         self.file_name = ""
+        util = Util()
 
-    def slice_text(self, Texts):
+    def slice_text(self, text, text_type=None):
         return_Texts = []
-        while Texts:
-            Text = Texts.pop(0)
-            if Text.get_text_type() == TextType.LYRICS:
-                if str(Text).count("\n") + 1 > Caption.max_line:
-                    return_Texts.extend(
-                        self.text_splitter.split_text_over_max_line(
-                            Text, Caption.max_line
-                        )
-                    )
-                else:
-                    return_Texts.append(Text)
-            elif (
-                Text.get_text_type() == TextType.SONG_TITLE
-                or Text.get_text_type() == TextType.INTERLUDE
-                or Text.get_text_type() == TextType.MENT_GUIDE
-                or Text.get_text_type() == TextType.MENT_GUIDE_INTRO
-            ):
-                return_Texts.append(Text)
-            elif Text.get_text_type() == TextType.FILE_NAME:
-                self.file_name = str(Text)
+        if text_type == TextType.LYRICS:
+            if text.count("\n") + 1 > Caption.max_line:
+                return_Texts.extend(
+                    self.text_splitter.split_text_over_max_line(text, Caption.max_line)
+                )
+            else:
+                return_Texts.append(text)
+        elif (
+            text_type == TextType.SONG_TITLE
+            or text_type == TextType.INTERLUDE
+            or text_type == TextType.MENT_GUIDE
+            or text_type == TextType.MENT_GUIDE_INTRO
+        ):
+            return_Texts.append(text)
+        elif text_type == TextType.FILE_NAME:
+            self.file_name = text
         return return_Texts
 
     def join_Texts(self, Texts):
-        print(Texts)
         return_text = ""
         while Texts:
             paragraph = Texts.pop(0)
@@ -68,7 +65,7 @@ class CaptionCreator:
                     return_text += text + "\n" + "//" + "\n"
         return return_text
 
-    def remove_text(self, lines, pattern, target_text_list):
+    def remove_text(self, lines, pattern, target_text_list, text_type=None):
         if isinstance(lines, Text):
             lines = str(lines)
         return_text = ""
@@ -98,23 +95,15 @@ class CaptionCreator:
         return return_text
 
     def create_caption(self, texts):
-        self.create_memo(
-            self.join_Texts(
-                self.slice_text(
-                    self.remove_text(texts, Pattern.caption, Caption.remove_list)
-                )
-            ),
-            self.file_name,
+        a = Util.repeat(
+            self,
+            texts,
+            self.remove_text,
+            pattern=Pattern.caption,
+            target_text_list=Caption.remove_list,
         )
-        """
-        self.create_memo(
-            self.remove_text(
-                self.join_Texts(self.slice_text(texts)),
-                Pattern.caption,
-                Caption.remove_list,
-            ),
-            self.file_name,
-        )"""
+        b = Util.repeat(self, a, self.slice_text)
+        self.create_memo(self.join_Texts(b), self.file_name)
 
     def create_memo(self, content, file_name):
         desktop_directory = os.path.join(os.path.expanduser("~"), "Desktop")

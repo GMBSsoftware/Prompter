@@ -3,6 +3,7 @@ import math
 from Setting import PPT
 from Setting import Pattern
 from Text import Text
+from Util import Util
 
 
 class TextSplitter:
@@ -18,17 +19,8 @@ class TextSplitter:
         return "\n".join(lines[:Line]), "\n".join(lines[Line:])
 
     # 설정한 최대 줄 수 넘으면 분할하는 메서드
-    def split_text_over_max_line(self, text, max_line):
+    def split_text_over_max_line(self, text, max_line, text_type=None):
         splitted_texts = []
-        is_Text = False
-
-        # 텍스트 클래스 인스턴스일때
-        if isinstance(text, Text):
-            return_splitted_Texts = []
-            text_type = text.get_text_type()
-            text = str(text)
-            is_Text = True
-
         # 텍스트가 최대 줄 수의 2배 이상이어서 여러번 나누기
         while self.count_line(text) / max_line > 2:
             splitted_texts.append(self.split_text_by_line(text, max_line)[0])
@@ -39,12 +31,6 @@ class TextSplitter:
             splitted_texts.extend(
                 self.split_text_by_line(text, math.ceil(self.count_line(text) / 2))
             )
-
-        # 텍스트 클래스 인스턴스일때
-        if is_Text:
-            for t in splitted_texts:
-                return_splitted_Texts.append(Text(t, text_type))
-            return return_splitted_Texts
         return splitted_texts
 
     def byte(self, string):
@@ -56,7 +42,7 @@ class TextSplitter:
         splitted_texts = []
         for text in raw_texts:
             # 나중에 곡목 리스트 작성된 부분 다르게 활용.
-            if "곡목" in text:
+            if "곡목" in text or "< 멘트 & 가사 >" in text:
                 continue
             # 해당 문단이 한 줄인 경우 분리 필요 없음.
             if "\n" not in text:
@@ -142,7 +128,7 @@ class TextSplitter:
 
         return return_texts
 
-    def split_text_over_line(self, text, max_byte):
+    def split_text_over_line(self, text, max_byte, text_type=None):
         formatted_lines = []
         for line in text.split("\n"):
             words = line.split()
@@ -160,26 +146,10 @@ class TextSplitter:
         return "\n".join(formatted_lines)
 
     def split_long_texts(self, Texts):
-        print(
-            "=========================================긴거 자르기 전임==============="
+        t = Util.repeat(
+            self, Texts, self.split_text_over_line, max_byte=PPT.max_byte_in_one_line
         )
-        print(Texts)
-        return_Texts = []
-        splitted_texts = []
-        while Texts:
-            text = Texts.pop(0)
-            text_type = text.get_text_type()
-            text = str(text)
-            splitted_texts.append(
-                Text(
-                    self.split_text_over_line(text, PPT.max_byte_in_one_line).strip(),
-                    text_type,
-                )
-            )
-        print("========================잘랐고 텍스트 형으로 생성 전임===============")
-        print(splitted_texts)
-        while splitted_texts:
-            t = splitted_texts.pop(0)
-            splitted_T = self.split_text_over_max_line(t, PPT.max_line)
-            return_Texts.extend(splitted_T)
+        return_Texts = Util.repeat(
+            self, t, self.split_text_over_max_line, max_line=PPT.max_line
+        )
         return return_Texts
