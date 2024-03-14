@@ -58,7 +58,7 @@ class PPTCreator:
             ):
                 self.join_text(slide, Text)
                 self.enter_new_line(slide)
-
+        slides.append(slide)
         previews = self.get_previews(self.prs)
         self.add_previews(slides, previews)
         self.slide_end(slides[-1])
@@ -163,7 +163,7 @@ class PPTCreator:
             self.enter_new_line(slides[i])
 
             # 마지막 프리뷰 빨간 글자
-            if i == len(slides) - 2:
+            if i == len(slides):
                 self.join_text_end(slides[i], previews[i + 1])
                 return
 
@@ -171,7 +171,7 @@ class PPTCreator:
 
     def slide_end(self, slide):
         title_shape = slide.shapes.title
-        p = title_shape.text_frame.paragraphs[-1]  # 마지막 단락 선택
+        p = title_shape.text_frame.paragraphs[0]  # 첫번째 단락 선택. 단락? 줄?
         if "마무리" in p.text:
             for run in p.runs:
                 run.font.color.rgb = TextColor.RED
