@@ -1,7 +1,6 @@
 from TextSplitter import TextSplitter
 from TextClassifier import TextClassifier
 from PPTCreator import PPTCreator
-from Setting import PPT
 import sys
 import os
 from CaptionCreator import CaptionCreator
@@ -22,6 +21,8 @@ caption_creator = CaptionCreator()
 splitted_texts = text_splitter.split_text(sys.stdin.read())
 
 classified_texts = text_classifier.classify_text(splitted_texts)
+# print("======================================")
+# print("classified_texts : ", classified_texts)
 
 # print("\n=========================================================\n")
 # for i in classifiedTexts:

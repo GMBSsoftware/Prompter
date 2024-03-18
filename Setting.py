@@ -52,8 +52,10 @@ class Pattern:
     file_name = r"\d{1,2}\s*월\s*\d{1,2}\s*일\s*.*예배.*경배.*찬양"
     song_title = r"(^\d[).]|1️⃣|2️⃣|3️⃣|4️⃣|5️⃣|6️⃣|7️⃣).+(?=\n|$)"
     ment_guide = r"멘트.*?\n"
-    lyrics_guide = r"가사.*?\n"
+    # lyrics_guide = r"가사.*?\n"
     caption = r"(\(|\[|\<).*?(\)|\]|\>)"
+    lyrics_guide = r"^가사$|(\(|\<|\[)가사(\)|\>|\])"
+    vedio = r"(\(|\[|\<)영상\s*\d?+\s*끝?(\)|\]|\>)"
 
 
 class PPT:

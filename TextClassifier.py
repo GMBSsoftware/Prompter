@@ -46,7 +46,7 @@ class TextClassifier:
                 self.is_opening_ment = False
                 self.is_lyrics = True
                 self.is_intro_ment = True
-            elif "가사" in str(text):
+            elif bool(re.search(Pattern.lyrics_guide, str(text))):
                 text.set_text_type(TextType.LYRICS_GUIDE)
                 self.is_lyrics = True
                 self.is_opening_ment = False

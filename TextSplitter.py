@@ -60,7 +60,7 @@ class TextSplitter:
         for line in lines:
             # 멘트가 아닌 전주, 간주, 가사 있으면 분리
             if (
-                any(keyword in line for keyword in ["전주", "간주", "가사"])
+                any(keyword in line for keyword in ["전주", "간주"])
                 and "멘트" not in line
             ):
                 if splitted_text_by_type.strip():
@@ -69,6 +69,12 @@ class TextSplitter:
                 splitted_text_by_type = ""
             # 곡목 분리
             elif bool(re.search(Pattern.song_title, line)):
+                if splitted_text_by_type.strip():
+                    splitted_texts.append(splitted_text_by_type.strip())
+                splitted_texts.append(line.strip())
+                splitted_text_by_type = ""
+            # 가사 분리
+            elif bool(re.search(Pattern.lyrics_guide, line)):
                 if splitted_text_by_type.strip():
                     splitted_texts.append(splitted_text_by_type.strip())
                 splitted_texts.append(line.strip())

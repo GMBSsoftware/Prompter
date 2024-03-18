@@ -80,7 +80,7 @@ class CaptionCreator:
             return_text += line.strip() + "\n"
         return return_text.strip()
 
-    def split_text_over_max_length(self, text):
+    """def split_text_over_max_length(self, text):
         return_text = []
         # 공백을 기준으로 텍스트를 분할
         words = text.split()
@@ -92,7 +92,30 @@ class CaptionCreator:
         return_text.append(" ".join(words[:half_length]))
         return_text.append(" ".join(words[half_length:]))
 
-        return return_text
+        return return_text"""
+
+    def split_text_over_line(self, text, max_byte, text_type=None):
+        formatted_lines = []
+        for line in text.split("\n"):
+            words = line.split()
+            current_line = ""
+            for word in words:
+                # 현재 줄에 단어를 추가했을 때 최대 바이트 수를 초과하지 않는 경우
+                if (
+                    len(current_line.encode("utf-8")) + len(word.encode("utf-8")) + 1
+                    <= max_byte
+                ):
+                    current_line += word + " "
+                else:
+                    # 최대 바이트 수를 초과하는 경우, 현재 줄을 반으로 나누기 위한 인덱스 찾기
+                    split_index = len(current_line) // 2
+                    for i in range(split_index, len(current_line)):
+                        if current_line[i] == " ":
+                            formatted_lines.append(current_line[:i].rstrip())
+                            current_line = current_line[i + 1 :] + word + " "
+                            break
+            formatted_lines.append(current_line.rstrip())
+        return "\n".join(formatted_lines)
 
     def create_caption(self, texts):
         a = Util.repeat(
@@ -102,8 +125,11 @@ class CaptionCreator:
             pattern=Pattern.caption,
             target_text_list=Caption.remove_list,
         )
-        b = Util.repeat(self, a, self.slice_text)
-        self.create_memo(self.join_Texts(b), self.file_name)
+        b = Util.repeat(
+            self, a, self.split_text_over_line, max_byte=Caption.max_byte_in_one_line
+        )
+        c = Util.repeat(self, b, self.slice_text)
+        self.create_memo(self.join_Texts(c), self.file_name)
 
     def create_memo(self, content, file_name):
         desktop_directory = os.path.join(os.path.expanduser("~"), "Desktop")
