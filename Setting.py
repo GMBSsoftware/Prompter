@@ -99,3 +99,8 @@ class Caption:
         "천영",
         "해든",
     ]
+
+
+class Word:
+    symbol_list = ["◎", "◆", "◇", "-"]
+    find_list = ['"', "'", "<", ">", ",", ".", "?", "!"]
