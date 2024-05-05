@@ -35,6 +35,7 @@ class TextClassifier:
             text = Text(splitted_texts.pop(0))
             # 파일명
             if bool(re.search(Pattern.file_name, str(text))):
+                text.set_text(self.get_file_name(str(text)))
                 text.set_text_type(TextType.FILE_NAME)
             elif "오프닝" in str(text):
                 text.set_text_type(TextType.MENT_GUIDE)
@@ -77,3 +78,10 @@ class TextClassifier:
                 text.set_text_type(self.classify_MENT_or_LYRICS())
             classified_texts.append(text)
         return classified_texts
+
+    # 제목에 (최종수정본) 등 부가적인 내용 붙여서 \n있을 경우 런타임에러 남.
+    def get_file_name(self, file_name):
+        if "\n" in file_name:
+            return file_name[: file_name.find("\n")]
+        else:
+            return file_name

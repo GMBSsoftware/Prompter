@@ -7,6 +7,9 @@ class Text:
         self.text = text
         self.set_text_type(text_type)
 
+    def set_text(self, text):
+        self.text = text
+
     def set_text_type(self, text_type):
         self.text_type = text_type
         if (
