@@ -1,43 +1,34 @@
-<<<<<<< Updated upstream
-import TextType
+from Setting import TextColor
+from Setting import TextType
 
 
 class Text:
-    def __init__(self, text):
+    def __init__(self, text, text_type=None):
         self.text = text
-        self.textType = None
-        self.textColor = None
-        self.textPositionFromHorizon = 0
+        self.set_text_type(text_type)
 
-    def setTextType(self, TextType):
-        self.textType = TextType
-=======
-class Text:
-    def __init__(self, text, text_type=None, text_color=None):
+    def set_text(self, text):
         self.text = text
-        self.text_type = text_type
-        self.text_color = text_color
 
     def set_text_type(self, text_type):
         self.text_type = text_type
->>>>>>> Stashed changes
-
-    def set_text_color(self, text_color):
-        self.text_color = text_color
-
-<<<<<<< Updated upstream
-    def setTextPosition(self, textPositionFromHorizon):
-        self.textPositionFromHorizon = textPositionFromHorizon
-
-    def __str__(self):
-        return f"Text:\n {self.text},\n, Type: {self.textType}, Color: {self.textColor}, Position: {self.textPositionFromHorizon}\n\n\n"
-=======
-    def set_text_type_and_color(self, text_type, text_color):
-        self.set_text_type(text_type)
-        self.set_text_color(text_color)
-
-    def get_text(self):
-        return self.text
+        if (
+            text_type == TextType.INTERLUDE
+            or text_type == TextType.LYRICS_GUIDE
+            or text_type == TextType.INTRO
+            or text_type == TextType.ELSE
+        ):
+            self.text_color = TextColor.ORANGE
+        elif (
+            text_type == TextType.MENT
+            or text_type == TextType.MENT_GUIDE
+            or text_type == TextType.MENT_GUIDE_INTRO
+        ):
+            self.text_color = TextColor.GREEN
+        elif text_type == TextType.SONG_TITLE:
+            self.text_color = TextColor.BLUE
+        else:
+            self.text_color = TextColor.WHITE
 
     def get_text_type(self):
         return self.text_type
@@ -50,4 +41,3 @@ class Text:
 
     def __repr__(self):
         return f"Text:\n {self.text}\n Type: {self.text_type}, Color: {self.text_color}\n\n"
->>>>>>> Stashed changes

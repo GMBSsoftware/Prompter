@@ -4,7 +4,6 @@ from pptx.dml.color import RGBColor
 from Text import Text
 from Setting import TextType
 from Setting import TextColor
-from Setting import TextLengthInOneLine
 from Setting import Pattern
 from Setting import PPT
 import os
@@ -29,12 +28,16 @@ class PPTCreator:
             if Text.get_text_type() == TextType.FILE_NAME:
                 self.join_text(slide, Text)
                 slides.append(slide)
-                file_name = Text.get_text()
+                file_name = str(Text)
                 slide = self.add_new_slide()
-            if Text.get_text_type() == TextType.MENT_GUIDE:
+            if (
+                Text.get_text_type() == TextType.MENT_GUIDE
+                or Text.get_text_type() == TextType.MENT_GUIDE_INTRO
+            ):
                 self.join_text(slide, Text)
-                if "없음" in Text.get_text():
-                    self.enter_new_line(slide)
+                self.enter(slide)
+                # if "없음" in str(Text):
+                # self.enter(slide)
             if Text.get_text_type() == TextType.MENT:
                 self.join_text(slide, Text)
                 slides.append(slide)
@@ -48,13 +51,16 @@ class PPTCreator:
                 slide = self.add_new_slide()
             if Text.get_text_type() == TextType.LYRICS_GUIDE:
                 self.join_text(slide, Text)
-            if Text.get_text_type() == TextType.INTERLUDE:
+            if (
+                Text.get_text_type() == TextType.INTERLUDE
+                or Text.get_text_type() == TextType.INTRO
+                or Text.get_text_type() == TextType.ELSE
+            ):
                 self.join_text(slide, Text)
-                self.enter_new_line(slide)
-
+                self.enter(slide)
+        slides.append(slide)
         previews = self.get_previews(self.prs)
         self.add_previews(slides, previews)
-
         self.slide_end(slides[-1])
 
         self.generate_PPT(file_name)
@@ -96,6 +102,11 @@ class PPTCreator:
         title_text_frame.add_paragraph()
         title_text_frame.add_paragraph()
 
+    def enter(self, slide):
+        title_shape = slide.shapes.title
+        title_text_frame = title_shape.text_frame
+        title_text_frame.add_paragraph()
+
     def join_text(self, slide, text):
         title_shape = slide.shapes.title
         title_text_frame = title_shape.text_frame
@@ -103,9 +114,7 @@ class PPTCreator:
         run = p.add_run()
         # 분류 다 된 후 Text 클래스로 전달 받을 때
         if isinstance(text, Text):
-            self.set_text(
-                run, text.get_text(), PPT.font, Pt(PPT.size), text.get_text_color()
-            )
+            self.set_text(run, str(text), PPT.font, Pt(PPT.size), text.get_text_color())
         # 슬라이드 마지막 줄에 미리보기 추가할 때
         else:
             self.set_text(run, text, PPT.font, Pt(PPT.size), TextColor.YELLOW)
@@ -115,7 +124,7 @@ class PPTCreator:
         title_text_frame = title_shape.text_frame
         p = title_text_frame.paragraphs[-1]  # 마지막 단락 선택
         run = p.add_run()
-        if "마무리" in text:
+        if "마무리" in text or "끝" in text:
             self.set_text(run, text, PPT.font, Pt(PPT.size), TextColor.RED)
         else:
             self.set_text(run, text, PPT.font, Pt(PPT.size), TextColor.YELLOW)
@@ -139,12 +148,8 @@ class PPTCreator:
                     previews.append("- 마무리" + previews.pop()[1:])
                 elif "간주" in first_line:
                     previews.append("- 간주" + previews.pop()[1:])
-
-            # 공백 제외 텍스트가 1줄 넘어가면 그냥 "멘트"라고 표시
-            elif (
-                len(first_line.replace(" ", "")) / TextLengthInOneLine.SIZE40.value > 1
-            ):
-                previews.append("- 멘트 -")
+            elif first_line == "":
+                previews.append("- 끝 -")
             else:
                 previews.append("- " + first_line.strip() + " -")
         return previews
@@ -153,24 +158,24 @@ class PPTCreator:
         for i in range(1, len(slides) - 1):
             self.enter_new_line(slides[i])
 
-            # 마지막 프리뷰 빨간 글자
+            # 마지막 프리뷰 빨간 글자. for문 범위가 -1 이전이니 -2가 마지막
             if i == len(slides) - 2:
                 self.join_text_end(slides[i], previews[i + 1])
                 return
 
             self.join_text(slides[i], previews[i + 1])
 
+            # 멘트 없는 경우에  프리뷰로만 표시하고 다음 슬라이드에는 필요 없음.
+            if "x" in previews[i + 1]:
+                slides[i + 1].shapes.title.text_frame.paragraphs[0].text = ""
+                slides[i + 1].shapes.title.text_frame.paragraphs[0].font.size = Pt(1)
+
     def slide_end(self, slide):
         title_shape = slide.shapes.title
-        p = title_shape.text_frame.paragraphs[-1]  # 마지막 단락 선택
+        p = title_shape.text_frame.paragraphs[0]  # 첫번째 단락 선택. 단락? 줄?
         if "마무리" in p.text:
             for run in p.runs:
                 run.font.color.rgb = TextColor.RED
-        else:
-            run = p.add_run()
-            run.text = "\n\n"
-            run = p.add_run()
-            self.set_text(run, "끝", PPT.font, Pt(PPT.size), TextColor.RED)
 
     # 폰트와 글자 크기가 안 바뀐다면 일일이 변수로 받아서 설정할 필요 없음.
     def set_text(self, run, text, font, size, color):
