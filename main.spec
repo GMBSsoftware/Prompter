@@ -2,10 +2,10 @@
 
 
 a = Analysis(
-    ['main.py'],
+    ['Main.py'],
     pathex=[],
     binaries=[],
-    datas=[('C:\\Users\\cbs97\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\pptx\\templates', 'pptx\\templates')],
+    datas=[('C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\pptx\\templates', 'pptx\\templates')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -21,7 +21,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='main',
+    name='Main',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
