@@ -163,7 +163,10 @@ class TextSplitter:
 
     def split_long_texts(self, Texts):
         t = Util.repeat(
-            self, Texts, self.split_text_over_line, max_byte=PPT.max_byte_in_one_line
+            self,
+            Texts,
+            self.split_text_over_line,
+            max_byte=PPT.max_byte_in_one_line,
         )
         return_Texts = Util.repeat(
             self, t, self.split_text_over_max_line, max_line=PPT.max_line

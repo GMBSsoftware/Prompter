@@ -11,7 +11,7 @@ class TextClassifier:
         self.is_opening_ment = True
         self.is_ment = False
         self.is_lyrics = False
-        self.is_before_opening_ment = True
+        self.is_before_start = True
         self.is_intro_ment = False
 
     def classify_MENT_or_LYRICS(self):
@@ -40,7 +40,7 @@ class TextClassifier:
             elif "오프닝" in str(text):
                 text.set_text_type(TextType.MENT_GUIDE)
                 self.is_opening_ment = True
-                self.is_before_opening_ment = False
+                self.is_before_start = False
             # 곡목
             elif bool(re.search(Pattern.song_title, str(text))):
                 text.set_text_type(TextType.SONG_TITLE)
@@ -51,20 +51,24 @@ class TextClassifier:
                 text.set_text_type(TextType.LYRICS_GUIDE)
                 self.is_lyrics = True
                 self.is_opening_ment = False
+                self.is_before_start = False
                 self.is_ment = False
                 self.is_intro_ment = False
             elif "없음" in str(text):
                 text.set_text_type(TextType.MENT_GUIDE)
+                self.is_before_start = False
                 self.is_ment = False
                 self.is_lyrics = True
             elif "멘트" in str(text):
                 if self.is_intro_ment:
                     text.set_text_type(TextType.MENT_GUIDE_INTRO)
                     self.is_intro_ment = False
+                    self.is_before_start = False
                 else:
                     text.set_text_type(TextType.MENT_GUIDE)
                 self.is_lyrics = False
                 self.is_opening_ment = False
+                self.is_before_start = False
                 self.is_ment = True
             elif "간주" in str(text):
                 text.set_text_type(TextType.INTERLUDE)
@@ -73,7 +77,7 @@ class TextClassifier:
             elif "전조" in str(text):
                 text.set_text_type(TextType.ELSE)
             else:
-                if self.is_before_opening_ment:
+                if self.is_before_start:
                     continue
                 text.set_text_type(self.classify_MENT_or_LYRICS())
             classified_texts.append(text)

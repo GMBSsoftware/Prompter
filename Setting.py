@@ -49,7 +49,7 @@ class TextLengthInOneLine(Enum):
 
 
 class Pattern:
-    file_name = r"\d{1,2}\s*월\s*\d{1,2}\s*일\s*.*예배.*경배.*찬양"
+    file_name = r"\d{1,2}\s*월\s*\d{1,2}\s*일.*찬양"
     song_title = r"(^\d[).]|1️⃣|2️⃣|3️⃣|4️⃣|5️⃣|6️⃣|7️⃣).+(?=\n|$)"
     ment_guide = r"멘트.*?\n"
     # lyrics_guide = r"가사.*?\n"
@@ -84,6 +84,7 @@ class Caption:
         "민지",
         "서경",
         "서연",
+        "선경",
         "성경",
         "성희",
         "승아",
