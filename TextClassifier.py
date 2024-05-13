@@ -43,8 +43,11 @@ class TextClassifier:
                 self.is_before_start = False
             # 곡목
             elif bool(re.search(Pattern.song_title, str(text))):
+                if "곡목" in str(text):
+                    continue
                 text.set_text_type(TextType.SONG_TITLE)
                 self.is_opening_ment = False
+                self.is_before_start = False
                 self.is_lyrics = True
                 self.is_intro_ment = True
             elif bool(re.search(Pattern.lyrics_guide, str(text))):
@@ -56,7 +59,6 @@ class TextClassifier:
                 self.is_intro_ment = False
             elif "없음" in str(text):
                 text.set_text_type(TextType.MENT_GUIDE)
-                self.is_before_start = False
                 self.is_ment = False
                 self.is_lyrics = True
             elif "멘트" in str(text):
