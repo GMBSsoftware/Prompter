@@ -55,8 +55,9 @@ class Pattern:
     # lyrics_guide = r"가사.*?\n"
     caption = r"(\(|\[|\<).*?(\)|\]|\>)"
     lyrics_guide = r"^가사$|(\(|\<|\[)가사(\)|\>|\])"
-    vedio = r"(\(|\[|\<)영상\s*\d?+\s*끝?(\)|\]|\>)"
-    caption = r"(\(|\[|\<)자막\s*\d?+\s*끝?(\)|\]|\>)"
+    vedio = r"(\(|\[|\<)*영상\s*\d?\d?\s*(\)|\]|\>)"
+    caption = r"(\(|\[|\<)*자막\s*\d?\d?\s*(\)|\]|\>)"
+    end = r"(\(|\[|\<)*끝\s*(\)|\]|\>)"
     bible = r"\(.{1,2}\s\d{1,2}:\d{1,2}(?:-\d{1,2})?\)"
 
 
@@ -105,10 +106,8 @@ class Caption:
 
 
 class Word:
-    symbol_list = [
-        "◎",
-        "◆",
-        "◇",
+    symbol_important = ["◎", "◆", "◇", "◈"]
+    symbol_other = [
         "-",
         "●",
         # 숫자
