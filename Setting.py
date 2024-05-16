@@ -27,6 +27,22 @@ class TextColor:
     WHITE = RGBColor(255, 255, 255)
 
 
+class TextColorJHI(TextColor):
+    RED = RGBColor(200, 0, 0)
+
+
+class TextColorHMH(TextColor):
+    pass
+
+
+class TextColorLWD(TextColor):
+    pass
+
+
+class TextColorJJS(TextColor):
+    pass
+
+
 class TextLengthInOneLine(Enum):
     # 옥션고딕 B 기준. 한 줄 최대 글자수 * 3 (utp-8은 한 글자가 3byte)
     SIZE30 = 33 * 3

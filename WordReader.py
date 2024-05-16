@@ -51,6 +51,3 @@ class WordReader:
         print("  -------------------------\n")
         print("  -------------------------\n")
     """
-
-    def over_max_length(self, text, max_byte) -> bool:
-        return len(text.encode("utf-8")) > max_byte
