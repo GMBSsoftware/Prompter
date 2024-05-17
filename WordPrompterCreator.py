@@ -6,13 +6,20 @@ import re
 
 
 class WordPrompterCreator:
+
     def make_prompter(self, file_name):
         doc = WordReader.openfile(file_name)
         ppt = PPTCreator()
         is_vedio = False
+        is_start = False
 
         for paragraph in doc.paragraphs:
             text = paragraph.text
+            if bool(re.search(Pattern.word_file_name)):
+                Word_file_name = text
+            elif "본문" in text:
+                continue
+
             if bool(re.search(Pattern.end, text)):
                 is_vedio = False
                 # 정규식을 그냥 끝으로 퉁쳐도 되나?
@@ -98,38 +105,39 @@ class WordPrompterCreator:
             return True
         return False
 
-    def join_process(self, texts):
-        return self.join_comma_ideal(self.join_space(texts))
+    def join_process(self, texts, max_byte):
+        text = self.join_space(texts)
+        if "," in text:
+            text1 = self.join_comma_ideal(text, max_byte)
+        return text1
 
     def join_space(self, texts):
         return " ".join(texts)
 
-    def join_comma_ideal(self, text):
-        is_comma_end = False
-        # 맨 끝이 콤마로 끝난 경우
-        if text[-1] == ",":
-            last_comma_index = text.rfind(",")
-            # 첫 번째 쉼표까지의 범위에서 뒤에서 두 번째 쉼표의 인덱스 찾기
-            second_last_comma_index = text.rfind(",", 0, last_comma_index)
-            # TODO 컴마가 없으면 어떡하지?
-        else:
-            # 맨 끝 콤마 아닌 경우
-            text1 = text[: text.rfind(",") + 1]
-            text2 = text[text.rfind(",") + 1 :]
+    def join_comma_ideal(self, text, max_byte):
+        comma_index = -1
+        while True:
+            # 현재 콤마의 인덱스를 찾습니다.
+            comma_index = text.find(",", comma_index + 1)
+            # 더 이상 콤마가 없으면 루프를 종료합니다.
+            if comma_index == -1:
+                break
+            # 텍스트를 콤마 위치를 기준으로 두 부분으로 나눕니다.
+            text1 = text[: comma_index + 1]
+            text2 = text[comma_index + 1 :]
 
-        # 맨 뒤 콤마 기준으로 양분했는데 max_byte 넘은 경우 다시 리턴
-        if self.check_over_length(text1, max_byte) or self.check_over_length(
-            text2, max_byte
-        ):
-            return text
-        # 나눠진 텍스트가 서로 2배 이상 차이 날 때 다시 리턴
-        if abs(self.length(text1) - self.length(text2)) > min(
-            self.length(text1), self.length(text2)
-        ):
-            return text[text1, text2]
-        # 나눴는데 길이 비슷하게 잘 나뉘었을 때
-        else:
-            return "\n".join([text1, text2])
+            # 각 부분이 최대 바이트 수를 초과하지 않는지 확인합니다.
+            if not self.check_over_length(
+                text1, max_byte
+            ) and not self.check_over_length(text2, max_byte):
+                # 두 부분의 길이 차이가 서로 2배 이상 나지 않는지 확인합니다.
+                if abs(self.length(text1) - self.length(text2)) <= min(
+                    self.length(text1), self.length(text2)
+                ):
+                    return "\n".join([text1.strip(), text2.strip()])
+
+        # 적절한 분할이 없으면 원래 텍스트를 반환합니다.
+        return text
 
     def process(self, text):
         # max_byte 넘지 않았다면 그대로 반환
@@ -138,11 +146,11 @@ class WordPrompterCreator:
         # max_byte 넘었으면
         else:
             splitted = self.split_process(text)
-            joined = self.join_process(splitted)
+            joined = self.join_process(splitted, max_byte)
         return joined
 
 
-text = """고생하고, 갖은 고통을 받고, 헐벗고, 들개나 짐승같이 살고, """
+text = """존재물도 사연도 신기하고 오묘하지만, 그것들을 만들고 행하시는 전능자 하나님과, 성령과 성자가 신비하고 오묘한 기묘자이심을, 온전히 깨닫고 대화하며 살아라. """
 max_byte = 60
 w = WordPrompterCreator()
 
