@@ -77,6 +77,7 @@ class Pattern:
     caption = r"(\(|\[|\<)*자막\s*\d?\d?\s*(\)|\]|\>)"
     end = r"(\(|\[|\<)*끝\s*(\)|\]|\>)"
     bible = r"\d{1,2}:\d{1,2}|\d{1,2}절|\d{1,3}편"
+    bible_guide = r"본\s*문"
 
 
 class PPT:

@@ -4,8 +4,39 @@ from Setting import Word
 from Setting import Pattern
 import re
 
+from docx import Document
+
 
 class WordPrompterCreator:
+    def __init__(self) -> None:
+        self.titles = []
+
+    # 워드 문서 읽어와서 파일명, 제목 저장. 말씀 시작 부분 위치 저장.
+
+    # 본문 없는 경우도 있고, 성경 본문을 문단을 나눠놓은 경우도 있다. 폰트로 구별해야될 것 같다.
+
+    def process_first(self, doc):
+        is_before_bible = True
+        i = -1
+        for paragraph in doc.paragraphs:
+            text = paragraph.text
+            i += 1
+            if is_before_bible:
+                # "본문"
+                if bool(re.search(Pattern.bible_guide, text)):
+                    is_before_bible = False
+                    continue
+                if bool(re.search(Pattern.word_file_name, text)):
+                    self.file_name = text
+                # 공백이 아닌 경우에만 주제에 추가
+                elif text.strip():
+                    self.titles.append(text)
+            else:
+                if bool(re.search(Pattern.bible, text)):
+                    continue
+                else:
+                    self.start_index = i
+                    return
 
     def make_prompter(self, file_name):
         doc = WordReader.openfile(file_name)
@@ -13,12 +44,10 @@ class WordPrompterCreator:
         is_vedio = False
         is_start = False
 
-        for paragraph in doc.paragraphs:
+        self.process_first(doc)
+
+        for paragraph in doc.paragraphs[self.start_index :]:
             text = paragraph.text
-            if bool(re.search(Pattern.word_file_name)):
-                Word_file_name = text
-            elif "본문" in text:
-                continue
 
             if bool(re.search(Pattern.end, text)):
                 is_vedio = False
@@ -151,6 +180,7 @@ class WordPrompterCreator:
 
 
 text = """존재물도 사연도 신기하고 오묘하지만, 그것들을 만들고 행하시는 전능자 하나님과, 성령과 성자가 신비하고 오묘한 기묘자이심을, 온전히 깨닫고 대화하며 살아라. """
+"""
 max_byte = 60
 w = WordPrompterCreator()
 
@@ -166,3 +196,15 @@ if isinstance(result, list):
         print("길이 :", w.length(i), "\t", i)
 else:
     print(result)
+"""
+
+doc = Document("C:/Users/cbs97/AppData/Local/Programs/Python/Python311/example.docx")
+w = WordPrompterCreator()
+w.process_first(doc)
+print("titles:", w.titles)
+print("start_index:", w.start_index)
+print("file_name:", w.file_name)
+for paragraph in doc.paragraphs[w.start_index : w.start_index + 5]:
+    print("Text:", paragraph.text)
+    print("  -------------------------\n")
+    print("  -------------------------\n")
