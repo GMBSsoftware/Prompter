@@ -10,17 +10,17 @@ from docx import Document
 class WordPrompterCreator:
     def __init__(self) -> None:
         self.titles = []
+        self.max_line = Word.max_line
 
     # 워드 문서 읽어와서 파일명, 제목 저장. 말씀 시작 부분 위치 저장.
-
-    # 본문 없는 경우도 있고, 성경 본문을 문단을 나눠놓은 경우도 있다. 폰트로 구별해야될 것 같다.
-
     def process_first(self, doc):
         is_before_bible = True
+        bible_font = ""
         i = -1
         for paragraph in doc.paragraphs:
             text = paragraph.text
             i += 1
+            # "본문" 단어 나오기 이전
             if is_before_bible:
                 # "본문"
                 if bool(re.search(Pattern.bible_guide, text)):
@@ -32,7 +32,17 @@ class WordPrompterCreator:
                 elif text.strip():
                     self.titles.append(text)
             else:
+                # 공백일 때 건너뛰기
+                if text == "":
+                    continue
+                # 성경 구절 정규식일 때
                 if bool(re.search(Pattern.bible, text)):
+                    bible_font = paragraph.runs[0].font.name
+                    print("bible_font:", bible_font)
+                    continue
+                # 성경 구절 문단을 나눠썼을 때는 폰트로 구별.
+                elif paragraph.runs[0].font.name == bible_font:
+                    print("현재 문단 폰트:", bible_font)
                     continue
                 else:
                     self.start_index = i
@@ -43,6 +53,9 @@ class WordPrompterCreator:
         ppt = PPTCreator()
         is_vedio = False
         is_start = False
+
+        slides = []
+        slide = ppt.add_new_slide()
 
         self.process_first(doc)
 
@@ -55,9 +68,13 @@ class WordPrompterCreator:
             if is_vedio:
                 continue
             elif any(symbol in text for symbol in Word.symbol_important):
-                ppt.add_new_slide()
+                slides.append(slide)
+                slide = ppt.add_new_slide()
+                ppt.join_text(slide, text)
             elif bool(re.search(Pattern.vedio, text)):
-                ppt.add_new_slide()
+                slides.append(slide)
+                slide = ppt.add_new_slide()
+                ppt.join_text(slide, text)
                 is_vedio = True
                 continue
             elif bool(re.search(Pattern.caption, text)):
@@ -66,6 +83,14 @@ class WordPrompterCreator:
             elif bool(re.search(Pattern.bible, text)):
                 # 성경구절
                 pass
+            # 설정한 최대 줄 수 넘어가면 다음 슬라이드에 만들어야함.
+            elif (
+                slide.shapes.title.text_frame.paragraphs[-1].text.count("\n") + 1
+                > self.max_line
+            ):
+                pass
+            elif text == "":
+                ppt.enter(slide)
             else:
                 pass
 
@@ -198,7 +223,7 @@ else:
     print(result)
 """
 
-doc = Document("C:/Users/cbs97/AppData/Local/Programs/Python/Python311/example.docx")
+"""doc = Document("C:/Users/cbs97/AppData/Local/Programs/Python/Python311/example.docx")
 w = WordPrompterCreator()
 w.process_first(doc)
 print("titles:", w.titles)
@@ -208,3 +233,4 @@ for paragraph in doc.paragraphs[w.start_index : w.start_index + 5]:
     print("Text:", paragraph.text)
     print("  -------------------------\n")
     print("  -------------------------\n")
+"""
