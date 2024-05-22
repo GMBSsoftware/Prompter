@@ -25,6 +25,7 @@ class TextColor:
     GREEN = RGBColor(102, 255, 51)
     BLUE = RGBColor(101, 255, 255)
     WHITE = RGBColor(255, 255, 255)
+    BLACK = RGBColor(0, 0, 0)
 
 
 class TextColorJHI(TextColor):

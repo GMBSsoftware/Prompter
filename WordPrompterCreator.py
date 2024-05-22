@@ -12,7 +12,7 @@ class WordPrompterCreator:
         self.titles = []
         self.max_line = Word.max_line
 
-    # 워드 문서 읽어와서 파일명, 제목 저장. 말씀 시작 부분 위치 저장.
+    # 워드 문서 읽어와서 파일명, 제목 저장. 말씀 시작 부분 위치 저장. 기본 폰트 저장.
     def process_first(self, doc):
         is_before_bible = True
         bible_font = ""
@@ -38,13 +38,12 @@ class WordPrompterCreator:
                 # 성경 구절 정규식일 때
                 if bool(re.search(Pattern.bible, text)):
                     bible_font = paragraph.runs[0].font.name
-                    print("bible_font:", bible_font)
                     continue
                 # 성경 구절 문단을 나눠썼을 때는 폰트로 구별.
                 elif paragraph.runs[0].font.name == bible_font:
-                    print("현재 문단 폰트:", bible_font)
                     continue
                 else:
+                    self.word_font = paragraph.runs[0].font.name
                     self.start_index = i
                     return
 
@@ -72,9 +71,6 @@ class WordPrompterCreator:
                 slide = ppt.add_new_slide()
                 ppt.join_text(slide, text)
             elif bool(re.search(Pattern.vedio, text)):
-                slides.append(slide)
-                slide = ppt.add_new_slide()
-                ppt.join_text(slide, text)
                 is_vedio = True
                 continue
             elif bool(re.search(Pattern.caption, text)):
