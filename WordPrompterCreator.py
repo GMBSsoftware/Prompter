@@ -11,6 +11,8 @@ class WordPrompterCreator:
     def __init__(self) -> None:
         self.titles = []
         self.max_line = Word.max_line
+        # 설정 해야함.
+        self.max_byte = 60
 
     # 워드 문서 읽어와서 파일명, 제목 저장. 말씀 시작 부분 위치 저장. 기본 폰트 저장.
     def process_first(self, doc):
@@ -26,6 +28,7 @@ class WordPrompterCreator:
                 if bool(re.search(Pattern.bible_guide, text)):
                     is_before_bible = False
                     continue
+                # o 월 o 일 oo 말씀
                 if bool(re.search(Pattern.word_file_name, text)):
                     self.file_name = text
                 # 공백이 아닌 경우에만 주제에 추가
@@ -42,6 +45,7 @@ class WordPrompterCreator:
                 # 성경 구절 문단을 나눠썼을 때는 폰트로 구별.
                 elif paragraph.runs[0].font.name == bible_font:
                     continue
+                # 말씀 시작 부분
                 else:
                     self.word_font = paragraph.runs[0].font.name
                     self.start_index = i
@@ -155,6 +159,24 @@ class WordPrompterCreator:
             return True
         return False
 
+    def check_over_line(self, text, slide=None):
+        # 현재 슬라이드에 있는 줄 수에 변수로 넘긴 text를 합쳤을 때 최대 줄 수 넘으면 true
+        if slide:
+            if (
+                slide.shapes.title.text_frame.paragraphs[-1].text.count("\n") + 1
+                > self.max_line
+            ):
+                return True
+        # 슬라이드 변수로 안 줬을 때 그냥 text 줄 수가 최대 줄 수 넘는지 체크
+        if text.count("\n") + 1 > self.max_line:
+            return True
+        return False
+
+    def max_process(self, text, slide):
+        # 초과
+        if self.check_over_length(text):
+            splitted_text = self.split_process(text)
+
     def join_process(self, texts, max_byte):
         text = self.join_space(texts)
         if "," in text:
@@ -191,12 +213,12 @@ class WordPrompterCreator:
 
     def process(self, text):
         # max_byte 넘지 않았다면 그대로 반환
-        if not self.check_over_length(text, max_byte):
+        if not self.check_over_length(text, self.max_byte):
             return text
         # max_byte 넘었으면
         else:
             splitted = self.split_process(text)
-            joined = self.join_process(splitted, max_byte)
+            joined = self.join_process(splitted, self.max_byte)
         return joined
 
 

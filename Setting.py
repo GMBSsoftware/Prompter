@@ -151,3 +151,15 @@ class Word:
     # 기호도 새 슬라이드로 넘어갈 기호랑 다음 줄로 넘어갈 기호 구별 필요
     find_list = ['"', "'", "<", ">", ",", ".", "?", "!"]
     # 문장 끝에 오는 마침표, 느낌표랑 문장 앞에 올 괄호, 따옴표 구별 필요
+
+
+ppt = PPT
+
+print(ppt.size)  # 46
+
+# 동적으로 문자열을 구성하여 enum 항목에 접근
+enum_name = f"SIZE{ppt.size}"
+enum_value = getattr(TextLengthInOneLine, enum_name).value
+
+print(enum_name)  # "SIZE46"
+print(enum_value)  # 63
