@@ -85,8 +85,7 @@ class WordPrompterCreator:
                 # 성경구절
                 pass
             # 설정한 최대 줄 수 넘어가면 다음 슬라이드에 만들어야함.
-            elif self.get_line(slide) > self.max_line:
-                pass
+
             elif text == "":
                 self.ppt.enter(slide)
             else:
@@ -102,9 +101,7 @@ class WordPrompterCreator:
         for paragraph in doc.paragraphs:
             text = paragraph.text
             self.ppt.enter(slide)
-            if text == "":
-                self.ppt.enter(slide)
-            self.max_process(text, slide)
+            slide = self.max_process(text, slide)
 
         desktop_directory = os.path.join(os.path.expanduser("~"), "Desktop")
         self.ppt.prs.save(f"{desktop_directory}/hi.pptx")
@@ -112,17 +109,6 @@ class WordPrompterCreator:
     # utf-8로 인코드 했을 때 텍스트의 바이트 구하는 메서드
     def length(self, text):
         return len(text.encode("utf-8"))
-
-    # 슬라이드의 글자 줄 수 구하는 메서드
-    def get_line(self, slide_or_text):
-        if isinstance(slide_or_text, str):
-            return text.count("\n") + 1
-        elif isinstance(slide_or_text, Slide):
-            print(slide_or_text.shapes.title.text_frame.paragraphs)
-            return (
-                slide_or_text.shapes.title.text_frame.paragraphs[-1].text.count("\n")
-                + 1
-            )
 
     def split_space(self, text):
         return text.split()
@@ -157,11 +143,6 @@ class WordPrompterCreator:
             return_texts.append(text)
         return return_texts
 
-    def split_process(self, text):
-        return self.split_double_quotation_marks(
-            self.split_quotation_marks(self.split_space(text))
-        )
-
     def split_double_quotation_marks(self, texts):
         return_texts = []
         for text in texts:
@@ -181,21 +162,84 @@ class WordPrompterCreator:
             return_texts.append(text)
         return return_texts
 
-    def check_over_length(self, text, max_byte):
-        if self.length(text) > max_byte:
+    # 절반으로 분리.
+    def split_text_half(self, text):
+        return_text = []
+        # 공백을 기준으로 텍스트를 분할
+        words = text.split()
+
+        # 분할된 텍스트의 길이를 확인하여 절반 지점 계산
+        half_length = (len(words) // 2) + 1
+        # 분할된 텍스트를 절반으로 자르기. 각 단어 공백 유지.
+        return_text.append(" ".join(words[:half_length]))
+        return_text.append(" ".join(words[half_length:]))
+        return return_text
+
+    def new_process(self, text, max_byte):
+        # 한 줄에 다 될때
+        if self.length(text) <= max_byte:
+            # print("한 줄 안 넘음")
+            return text
+        # 한 줄 넘어갈 때
+        else:
+            text = self.split_double_quotation_marks(
+                self.split_quotation_marks(self.split_space(text))
+            )
+            # 잘 나눠져서 길이 안 넘으면
+            if not self.check_over_length(
+                self.join_comma_ideal(self.join_space(text), self.max_byte),
+                self.max_byte,
+            ):
+                print("===========좋아 join_comma_ideal로 합침============")
+                return self.join_comma_ideal(self.join_space(text), self.max_byte)
+            # join 반환은 최대한 안 해야됨. 무식하게 그냥 붙이는거야.
+            return self.join(text, max_byte)
+
+    # 텍스트 or 텍스트 리스트들의 길이가 초과했는지 체크
+    def check_over_length(self, text_or_texts, max_byte):
+        # 텍스트가 한 개면 리스트화해서 반복
+        if not isinstance(text_or_texts, list):
+            # 텍스트가 이미 \n로 나뉘었으면 리스트로 분리
+            if "\n" in text_or_texts:
+                text_or_texts = text_or_texts.split("\n")
+            else:
+                text_or_texts = [text_or_texts]
+        # 텍스트들 각각 체크
+        for i in text_or_texts:
+            if self.length(i) > max_byte:
+                return True
+        return False
+
+    # 현재 슬라이드의 줄 수와 입력할 텍스트의 줄 수를 합친 값이 최대 줄 수 초과하는지 체크
+    def check_over_line(self, text, slide):
+        # 현재 슬라이드에 있는 줄 수에 변수로 넘긴 text를 합쳤을 때 최대 줄 수 넘으면 true
+        slide_text = ""
+        # 슬라이드에서 한 줄씩 가져와서 반복
+        for paragraph in slide.shapes.title.text_frame.paragraphs:
+            # 공백이면 문단 나눠진 거니 \n 추가
+            if paragraph.text == "":
+                slide_text += "\n"
+            # 글자 있으면 추가
+            else:
+                slide_text += paragraph.text + "\n"
+
+        slide_line = slide_text.strip().count("\n") + 1
+        text_line = -0
+
+        if text == "":
+            text_line = 0
+        else:
+            text_line = text.count("\n") + 1
+
+        if slide_line + text_line > self.max_line:
             return True
         return False
 
-    def check_over_line(self, text, slide=None):
-        # 현재 슬라이드에 있는 줄 수에 변수로 넘긴 text를 합쳤을 때 최대 줄 수 넘으면 true
-        if slide:
-            if (
-                slide.shapes.title.text_frame.paragraphs[-1].text.count("\n") + 1
-                > self.max_line
-            ):
-                return True
-        # 슬라이드 변수로 안 줬을 때 그냥 text 줄 수가 최대 줄 수 넘는지 체크
-        if text.count("\n") + 1 > self.max_line:
+    # 나뉜 텍스트들 문제 없는지 체크
+    def check_is_wrong(self, texts, max_byte):
+        if self.check_over_length(texts, max_byte) or self.check_length_over_twice(
+            texts
+        ):
             return True
         return False
 
@@ -203,11 +247,14 @@ class WordPrompterCreator:
     def max_process(self, text, slide):
         # 최대 글자 초과시 분리, 재조합 프로세스 실행
         if self.check_over_length(text, self.max_byte):
-            text = self.join_process(self.split_process(text), self.max_byte)
-            # 성경 구절인데 최대 글자 넘을 때 분리가 안 되는데???ㅋㅋㅋㅋ
+            # print("최대 글자를 넘으므로 분리 시작")
+            text = self.new_process(text, self.max_byte)
+
+        self.check_over_line(text, slide)
 
         # 기존 슬라이드 줄 수 + 현재 텍스트의 줄수가 최대 줄 수 초과
-        if self.get_line(slide) + self.get_line(text) > self.max_line:
+        if self.check_over_line(text, slide):
+            # print("새 슬라이드에 작성")
             # 나누기
             self.slides.append(slide)
             slide = self.ppt.add_new_slide()
@@ -215,18 +262,14 @@ class WordPrompterCreator:
             return slide
         # 최대 줄 수 미만이라 이어 붙이기
         else:
+            # print("기존 슬라이드에 작성")
             self.ppt.join_text(slide, text)
-            return
-
-    def join_process(self, texts, max_byte):
-        text = self.join_space(texts)
-        if "," in text:
-            text = self.join_comma_ideal(text, max_byte)
-        return text
+            return slide
 
     def join_space(self, texts):
         return " ".join(texts)
 
+    # 컴마를 기준으로 나눴을 때 이상적으로 나눠지면 나눠서 반환, 아니면 그대로 반환하는 메서드
     def join_comma_ideal(self, text, max_byte):
         comma_index = -1
         while True:
@@ -251,6 +294,44 @@ class WordPrompterCreator:
 
         # 적절한 분할이 없으면 원래 텍스트를 반환합니다.
         return text
+
+    # max_byte 길이 찰 때까지 쭉 이어붙이는 메서드
+    def join(self, texts, max_byte):
+        result = ""
+        return_texts = []
+        for word in texts:
+            # max_byte 이하일 때 쭉 이어붙이기
+            if (self.length(result) + self.length(word)) < max_byte:
+                result += word + " "
+            # max_byte 넘어가서 반환할 배열에 추가 후 다시 반복
+            else:
+                return_texts.append(result)
+                result = word + " "
+        return_texts.append(result)
+        if len(return_texts) > 1:
+            last_text = return_texts[-2] + return_texts[-1]
+            return_texts = return_texts[:-2]
+            return_texts.extend(self.split_text_half(last_text))
+        print("안타깝게 join으로 합친 텍스트 :", "\n".join(return_texts))
+        return "\n".join(return_texts)
+
+    # 나눠진 텍스트들의 길이가 2배 이상 차이나는지 비교
+    def check_length_over_twice(self, texts):
+        # 배열 길이가 1 이하인 경우는 비교할 텍스트가 없으므로 2배 넘은걸로 가정.
+        if len(texts) <= 1:
+            return True
+        # 비교할 값
+        reference_text = texts[0]
+        # 텍스트 배열을 순회하며 항목의 길이 차이 비교.
+        for text in texts[1:]:
+            reference_length = self.length(reference_text)
+            if abs(self.length(text) - reference_length) >= min(
+                self.length(text), reference_length
+            ):
+                return True
+            reference_text = text
+        # 모든 항목을 순회한 후에도 차이가 2배 이상인 경우가 없으면 False를 반환합니다.
+        return False
 
 
 text = """존재물도 사연도 신기하고 오묘하지만, 그것들을 만들고 행하시는 전능자 하나님과, 성령과 성자가 신비하고 오묘한 기묘자이심을, 온전히 깨닫고 대화하며 살아라. """
@@ -286,3 +367,8 @@ for paragraph in doc.paragraphs[w.start_index : w.start_index + 5]:
 
 w = WordPrompterCreator()
 w.prompter_default()
+
+text = """긴 세월 동안 못 참고 / 우리에게 행하고 계십니다.
+선생이 못 참고 행하듯이 / 그러합니다."""
+# print("원본 텍스트 길이 :", w.length(text))
+# print("===========최종 결과물============\n", w.check_over_length(text, w.max_byte))
