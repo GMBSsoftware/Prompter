@@ -1,6 +1,6 @@
 import re
 import math
-from Setting import PPT
+from Setting import PPT_SONG
 from Setting import Pattern
 from Text import Text
 from Util import Util
@@ -166,9 +166,9 @@ class TextSplitter:
             self,
             Texts,
             self.split_text_over_line,
-            max_byte=PPT.max_byte_in_one_line,
+            max_byte=PPT_SONG.max_byte_in_one_line,
         )
         return_Texts = Util.repeat(
-            self, t, self.split_text_over_max_line, max_line=PPT.max_line
+            self, t, self.split_text_over_max_line, max_line=PPT_SONG.max_line
         )
         return return_Texts

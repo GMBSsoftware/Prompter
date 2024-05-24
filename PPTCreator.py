@@ -5,7 +5,7 @@ from Text import Text
 from Setting import TextType
 from Setting import TextColor
 from Setting import Pattern
-from Setting import PPT
+from Setting import PPT_SONG
 import os
 import re
 
@@ -75,9 +75,7 @@ class PPTCreator:
 
         # 배경색 설정
         self.prs.slide_master.background.fill.solid()
-        self.prs.slide_master.background.fill.fore_color.rgb = RGBColor(
-            0, 0, 0
-        )  # 검은 배경 설정
+        self.prs.slide_master.background.fill.fore_color.rgb = PPT_SONG.back_color
 
     def add_new_slide(self):
         # 슬라이드 추가
@@ -114,10 +112,12 @@ class PPTCreator:
         run = p.add_run()
         # 분류 다 된 후 Text 클래스로 전달 받을 때
         if isinstance(text, Text):
-            self.set_text(run, str(text), PPT.font, Pt(PPT.size), text.get_text_color())
+            self.set_text(
+                run, str(text), PPT_SONG.font, Pt(PPT_SONG.size), text.get_text_color()
+            )
         # 슬라이드 마지막 줄에 미리보기 추가할 때
         else:
-            self.set_text(run, text, PPT.font, Pt(PPT.size), TextColor.YELLOW)
+            self.set_text(run, text, PPT_SONG.font, Pt(PPT_SONG.size), TextColor.YELLOW)
 
     def join_text_end(self, slide, text):
         title_shape = slide.shapes.title
@@ -125,9 +125,9 @@ class PPTCreator:
         p = title_text_frame.paragraphs[-1]  # 마지막 단락 선택
         run = p.add_run()
         if "마무리" in text or "끝" in text:
-            self.set_text(run, text, PPT.font, Pt(PPT.size), TextColor.RED)
+            self.set_text(run, text, PPT_SONG.font, Pt(PPT_SONG.size), TextColor.RED)
         else:
-            self.set_text(run, text, PPT.font, Pt(PPT.size), TextColor.YELLOW)
+            self.set_text(run, text, PPT_SONG.font, Pt(PPT_SONG.size), TextColor.YELLOW)
 
     def get_previews(self, prs):
         previews = []

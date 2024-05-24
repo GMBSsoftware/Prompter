@@ -33,7 +33,5 @@ class Default:
     def process_caption(self, text, slide):
         pass
 
-
-print(TextColor.RED)
-d = Default()
-print(TextColor.RED)
+    # 잠언. 숫자로 된거. 주제랑 구별 필요.
+    # 주제인 경우 앞에 "주제"단어가 나오거나 뒤에 "라는"이 붙어있음. "라는\n주제로" 이렇게 문단 나뉜 경우 있음.

@@ -81,13 +81,22 @@ class Pattern:
     bible_guide = r"본\s*문"
 
 
-class PPT:
+class PPT_SONG:
     max_line = 5
     font = "옥션고딕 B"
     # 글자 크기
     size = 46
-    # 글자 크기 기준 한 줄 최대 글자 수
-    max_byte_in_one_line = TextLengthInOneLine.SIZE46.value
+    # 글자 크기 기준 한 줄 최대 글자(byte) 수
+    max_byte_in_one_line = getattr(TextLengthInOneLine, f"SIZE{size}").value
+    back_color = TextColor.BLACK
+
+
+class PPT_WORD:
+    max_line = 6
+    font = "옥션고딕 B"
+    size = 48
+    max_byte_in_one_line = getattr(TextLengthInOneLine, f"SIZE{size}").value
+    back_color = TextColor.WHITE
 
 
 class Caption:
@@ -153,7 +162,7 @@ class Word:
     # 문장 끝에 오는 마침표, 느낌표랑 문장 앞에 올 괄호, 따옴표 구별 필요
 
 
-ppt = PPT
+"""ppt = PPT_SONG
 
 print(ppt.size)  # 46
 
@@ -163,3 +172,5 @@ enum_value = getattr(TextLengthInOneLine, enum_name).value
 
 print(enum_name)  # "SIZE46"
 print(enum_value)  # 63
+
+print("되나?", getattr(TextLengthInOneLine, f"SIZE{ppt.size}").value)"""

@@ -2,9 +2,10 @@ from WordReader import WordReader
 from PPTCreator import PPTCreator
 from Setting import Word
 from Setting import Pattern
-import re
+import re, os
 
 from docx import Document
+from pptx.slide import Slide
 
 
 class WordPrompterCreator:
@@ -13,6 +14,7 @@ class WordPrompterCreator:
         self.max_line = Word.max_line
         # 설정 해야함.
         self.max_byte = 60
+        self.slides = []
 
     # 워드 문서 읽어와서 파일명, 제목 저장. 말씀 시작 부분 위치 저장. 기본 폰트 저장.
     def process_first(self, doc):
@@ -53,12 +55,11 @@ class WordPrompterCreator:
 
     def make_prompter(self, file_name):
         doc = WordReader.openfile(file_name)
-        ppt = PPTCreator()
+        self.ppt = PPTCreator()
         is_vedio = False
         is_start = False
 
-        slides = []
-        slide = ppt.add_new_slide()
+        slide = self.ppt.add_new_slide()
 
         self.process_first(doc)
 
@@ -71,9 +72,9 @@ class WordPrompterCreator:
             if is_vedio:
                 continue
             elif any(symbol in text for symbol in Word.symbol_important):
-                slides.append(slide)
-                slide = ppt.add_new_slide()
-                ppt.join_text(slide, text)
+                self.slides.append(slide)
+                slide = self.ppt.add_new_slide()
+                self.ppt.join_text(slide, text)
             elif bool(re.search(Pattern.vedio, text)):
                 is_vedio = True
                 continue
@@ -84,18 +85,44 @@ class WordPrompterCreator:
                 # 성경구절
                 pass
             # 설정한 최대 줄 수 넘어가면 다음 슬라이드에 만들어야함.
-            elif (
-                slide.shapes.title.text_frame.paragraphs[-1].text.count("\n") + 1
-                > self.max_line
-            ):
+            elif self.get_line(slide) > self.max_line:
                 pass
             elif text == "":
-                ppt.enter(slide)
+                self.ppt.enter(slide)
             else:
                 pass
 
+    # 그냥 워드 파일 그대로 ppt 파일로 생성
+    def prompter_default(self):
+        doc = Document(
+            "C:\\Users\\cbs97\\AppData\\Local\\Programs\\Python\\Python311\\test.docx"
+        )
+        self.ppt = PPTCreator()
+        slide = self.ppt.add_new_slide()
+        for paragraph in doc.paragraphs:
+            text = paragraph.text
+            self.ppt.enter(slide)
+            if text == "":
+                self.ppt.enter(slide)
+            self.max_process(text, slide)
+
+        desktop_directory = os.path.join(os.path.expanduser("~"), "Desktop")
+        self.ppt.prs.save(f"{desktop_directory}/hi.pptx")
+
+    # utf-8로 인코드 했을 때 텍스트의 바이트 구하는 메서드
     def length(self, text):
         return len(text.encode("utf-8"))
+
+    # 슬라이드의 글자 줄 수 구하는 메서드
+    def get_line(self, slide_or_text):
+        if isinstance(slide_or_text, str):
+            return text.count("\n") + 1
+        elif isinstance(slide_or_text, Slide):
+            print(slide_or_text.shapes.title.text_frame.paragraphs)
+            return (
+                slide_or_text.shapes.title.text_frame.paragraphs[-1].text.count("\n")
+                + 1
+            )
 
     def split_space(self, text):
         return text.split()
@@ -172,16 +199,30 @@ class WordPrompterCreator:
             return True
         return False
 
+    # 최대 글자, 최대 줄 수 넘는지 체크해서 넘으면 나누는 프로세스
     def max_process(self, text, slide):
-        # 초과
-        if self.check_over_length(text):
-            splitted_text = self.split_process(text)
+        # 최대 글자 초과시 분리, 재조합 프로세스 실행
+        if self.check_over_length(text, self.max_byte):
+            text = self.join_process(self.split_process(text), self.max_byte)
+            # 성경 구절인데 최대 글자 넘을 때 분리가 안 되는데???ㅋㅋㅋㅋ
+
+        # 기존 슬라이드 줄 수 + 현재 텍스트의 줄수가 최대 줄 수 초과
+        if self.get_line(slide) + self.get_line(text) > self.max_line:
+            # 나누기
+            self.slides.append(slide)
+            slide = self.ppt.add_new_slide()
+            self.ppt.join_text(slide, text)
+            return slide
+        # 최대 줄 수 미만이라 이어 붙이기
+        else:
+            self.ppt.join_text(slide, text)
+            return
 
     def join_process(self, texts, max_byte):
         text = self.join_space(texts)
         if "," in text:
-            text1 = self.join_comma_ideal(text, max_byte)
-        return text1
+            text = self.join_comma_ideal(text, max_byte)
+        return text
 
     def join_space(self, texts):
         return " ".join(texts)
@@ -210,16 +251,6 @@ class WordPrompterCreator:
 
         # 적절한 분할이 없으면 원래 텍스트를 반환합니다.
         return text
-
-    def process(self, text):
-        # max_byte 넘지 않았다면 그대로 반환
-        if not self.check_over_length(text, self.max_byte):
-            return text
-        # max_byte 넘었으면
-        else:
-            splitted = self.split_process(text)
-            joined = self.join_process(splitted, self.max_byte)
-        return joined
 
 
 text = """존재물도 사연도 신기하고 오묘하지만, 그것들을 만들고 행하시는 전능자 하나님과, 성령과 성자가 신비하고 오묘한 기묘자이심을, 온전히 깨닫고 대화하며 살아라. """
@@ -252,3 +283,6 @@ for paragraph in doc.paragraphs[w.start_index : w.start_index + 5]:
     print("  -------------------------\n")
     print("  -------------------------\n")
 """
+
+w = WordPrompterCreator()
+w.prompter_default()
