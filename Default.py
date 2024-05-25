@@ -1,13 +1,15 @@
 from Setting import TextColor
 from Setting import TextLengthInOneLine
 from pptx.dml.color import RGBColor
-from WordPrompterCreator import WordPrompterCreator
+
+# from WordPrompterCreator import WordPrompterCreator
 
 
 class Default:
     def __init__(self) -> None:
         # 글자 색 설정
         TextColor.RED = RGBColor(250, 0, 0)
+        self.default_color = TextColor.WHITE
 
         # 폰트 설정
         self.font = "옥션고딕 B"
@@ -21,11 +23,11 @@ class Default:
 
     def process_bible(self, paragraph, slide):
         # 성경 구절이 따로 쓰이지 않음 (말씀과 폰트가 같음)
-        if paragraph.runs[0].font.name == WordPrompterCreator.word_fone:
+        """if paragraph.runs[0].font.name == WordPrompterCreator.word_fone:
             pass
         # 성경 구절이 따로 쓰임 (말씀과 폰트가 다름)
         else:
-            pass
+            pass"""
 
     def process_vedio(self, text, slide):
         pass
