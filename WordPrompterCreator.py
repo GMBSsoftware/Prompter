@@ -104,7 +104,7 @@ class WordPrompterCreator:
             slide = self.max_process(text, slide)
 
         desktop_directory = os.path.join(os.path.expanduser("~"), "Desktop")
-        self.ppt.prs.save(f"{desktop_directory}/hi.pptx")
+        self.ppt.prs.save(f"{desktop_directory}/no_enter_hi.pptx")
 
     # utf-8로 인코드 했을 때 텍스트의 바이트 구하는 메서드
     def length(self, text):
@@ -190,7 +190,7 @@ class WordPrompterCreator:
                 self.join_comma_ideal(self.join_space(text), self.max_byte),
                 self.max_byte,
             ):
-                print("===========좋아 join_comma_ideal로 합침============")
+                # print("===========좋아 join_comma_ideal로 합침============")
                 return self.join_comma_ideal(self.join_space(text), self.max_byte)
             # join 반환은 최대한 안 해야됨. 무식하게 그냥 붙이는거야.
             return self.join(text, max_byte)
@@ -249,8 +249,6 @@ class WordPrompterCreator:
         if self.check_over_length(text, self.max_byte):
             # print("최대 글자를 넘으므로 분리 시작")
             text = self.new_process(text, self.max_byte)
-
-        self.check_over_line(text, slide)
 
         # 기존 슬라이드 줄 수 + 현재 텍스트의 줄수가 최대 줄 수 초과
         if self.check_over_line(text, slide):
@@ -312,7 +310,7 @@ class WordPrompterCreator:
             last_text = return_texts[-2] + return_texts[-1]
             return_texts = return_texts[:-2]
             return_texts.extend(self.split_text_half(last_text))
-        print("안타깝게 join으로 합친 텍스트 :", "\n".join(return_texts))
+        # print("안타깝게 join으로 합친 텍스트 :", "\n".join(return_texts))
         return "\n".join(return_texts)
 
     # 나눠진 텍스트들의 길이가 2배 이상 차이나는지 비교
