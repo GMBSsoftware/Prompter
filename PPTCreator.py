@@ -1,7 +1,7 @@
 from pptx import Presentation
 from pptx.util import Mm, Pt
 from pptx.dml.color import RGBColor
-from Text import Text
+from Text import TextSong
 from Setting import TextType
 from Setting import TextColor
 from Setting import Pattern
@@ -111,7 +111,7 @@ class PPTCreator:
         p = title_text_frame.paragraphs[-1]  # 마지막 단락 선택
         run = p.add_run()
         # 분류 다 된 후 Text 클래스로 전달 받을 때
-        if isinstance(text, Text):
+        if isinstance(text, TextSong):
             self.set_text(
                 run, str(text), PPT_SONG.font, Pt(PPT_SONG.size), text.get_text_color()
             )

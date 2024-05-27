@@ -1,5 +1,6 @@
 from docx import Document
-import os
+from Text import TextWord
+import os, re
 
 
 class WordReader:
@@ -51,3 +52,42 @@ class WordReader:
         print("  -------------------------\n")
         print("  -------------------------\n")
     """
+
+    # 워드 파일 run에서 TextWord로 변환
+    def convert(self, doc):
+        return_texts = []
+        for paragraph in doc.paragraphs:
+            # 워드에서 엔터 때문에 공백인 경우
+            if paragraph.text == "":
+                return_texts.append("\n")
+            for run in paragraph.runs:
+                splitted_runs = run.text.split()
+                for i in splitted_runs:
+                    return_texts.append(
+                        TextWord(
+                            i,
+                            run.font.name,
+                            run.font.color.rgb if run.font.color else None,
+                            run.bold,
+                            run.underline,
+                        )
+                    )
+            return_texts.append("\n")
+        return return_texts
+
+    # 변환한 파일을 텍스트로만 이어 붙이기
+    def convert_to_string(self, converted_texts):
+        string = ""
+        for i in converted_texts:
+            string += str(i) + " "
+        return string
+
+
+doc = Document(
+    "C:\\Users\\cbs97\\AppData\\Local\\Programs\\Python\\Python311\\test.docx"
+)
+
+w = WordReader()
+result = w.convert(doc)
+a = w.convert_to_string(result)
+print("result :", a)

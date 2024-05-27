@@ -2,7 +2,7 @@ from Setting import TextType
 from Setting import Caption
 from Setting import Pattern
 from TextSplitter import TextSplitter
-from Text import Text
+from Text import TextSong
 from Util import Util
 import re
 import os
@@ -39,7 +39,7 @@ class CaptionCreator:
         while Texts:
             paragraph = Texts.pop(0)
             text = str(paragraph)
-            if isinstance(paragraph, Text):
+            if isinstance(paragraph, TextSong):
                 if paragraph.get_text_type() == TextType.SONG_TITLE:
 
                     if bool(re.search(r"\d\.", text)) or bool(re.search(r"\d\)", text)):
@@ -66,7 +66,7 @@ class CaptionCreator:
         return return_text
 
     def remove_text(self, lines, pattern, target_text_list, text_type=None):
-        if isinstance(lines, Text):
+        if isinstance(lines, TextSong):
             lines = str(lines)
         return_text = ""
         lines = lines.split("\n")

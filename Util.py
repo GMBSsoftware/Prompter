@@ -1,4 +1,4 @@
-from Text import Text
+from Text import TextSong
 
 
 class Util:
@@ -25,7 +25,7 @@ class Util:
         for item in list_for_processing:
 
             # Text형 이면
-            if isinstance(item, Text):
+            if isinstance(item, TextSong):
                 text_type = item.get_text_type()
                 item = str(item)
                 is_Text = True
@@ -48,7 +48,7 @@ class Util:
         # 전달 받을 때 Text 형이었으면 Text로 생성 후 반환
         if is_Text:
             for return_item, text_type in zip(result_list, text_type_list):
-                return_list.append(Text(return_item, text_type))
+                return_list.append(TextSong(return_item, text_type))
         else:
             return_list.extend(result_list)
 

@@ -2,7 +2,7 @@ import re
 import math
 from Setting import PPT_SONG
 from Setting import Pattern
-from Text import Text
+from Text import TextSong
 from Util import Util
 
 

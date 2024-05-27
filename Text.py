@@ -3,12 +3,25 @@ from Setting import TextType
 
 
 class Text:
-    def __init__(self, text, text_type=None):
+    def __init__(self, text):
         self.text = text
-        self.set_text_type(text_type)
+        self.color = TextColor.BLACK
 
-    def set_text(self, text):
+    def set_text(self, text, text_color=TextColor.BLACK):
         self.text = text
+        self.color = text_color
+
+    def get_text_color(self):
+        return self.color
+
+    def __str__(self):
+        return self.text
+
+
+class TextSong(Text):
+    def __init__(self, text, text_type=None):
+        super().__init__(text)
+        self.set_text_type(text_type)
 
     def set_text_type(self, text_type):
         self.text_type = text_type
@@ -33,11 +46,20 @@ class Text:
     def get_text_type(self):
         return self.text_type
 
-    def get_text_color(self):
-        return self.text_color
-
-    def __str__(self):
-        return self.text
-
     def __repr__(self):
         return f"Text:\n {self.text}\n Type: {self.text_type}, Color: {self.text_color}\n\n"
+
+
+class TextWord(Text):
+    def __init__(self, text, font, color=TextColor.BLACK, bold=None, underline=None):
+        self.text = text
+        self.font = font
+        if color == None:
+            self.color = TextColor.BLACK
+        else:
+            self.color = color
+        self.bold = bold
+        self.underline = underline
+
+    def __repr__(self):
+        return f"Text: {self.text}\n Font: {self.font}, Color: {self.color}\n bold: {self.bold}, underline: {self.underline}\n\n"

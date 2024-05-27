@@ -1,4 +1,4 @@
-from Text import Text
+from Text import TextSong
 from Setting import TextType
 from Setting import TextColor
 from Setting import Pattern
@@ -32,7 +32,7 @@ class TextClassifier:
     def classify_text(self, splitted_texts):
         classified_texts = []
         while splitted_texts:
-            text = Text(splitted_texts.pop(0))
+            text = TextSong(splitted_texts.pop(0))
             # 파일명
             if bool(re.search(Pattern.file_name, str(text))):
                 text.set_text(self.get_file_name(str(text)))
