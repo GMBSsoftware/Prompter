@@ -19,6 +19,7 @@ class WordPrompterCreator:
         self.max_byte = 60
         self.slides = []
         self.person = Default()
+        self.word_reader = WordReader()
 
     # 워드 문서 읽어와서 파일명, 제목 저장. 말씀 시작 부분 위치 저장. 기본 폰트 저장.
     def process_first(self, doc):
@@ -102,6 +103,10 @@ class WordPrompterCreator:
         )
         self.ppt = PPTCreator()
         slide = self.ppt.add_new_slide()
+        text_words = self.word_reader.convert(doc)
+
+        # 나눠서 넣네...... 이걸 어떡한담.....
+
         for paragraph in doc.paragraphs:
             self.ppt.enter(slide)
             slide = self.max_process(paragraph, slide)

@@ -61,5 +61,17 @@ class TextWord(Text):
         self.bold = bold
         self.underline = underline
 
+    def __str__(self):
+        return super().__str__()
+
     def __repr__(self):
         return f"Text: {self.text}\n Font: {self.font}, Color: {self.color}\n bold: {self.bold}, underline: {self.underline}\n\n"
+
+
+# pptx 라이브러리의 paragraph처럼 사용하기 위해. (run->TextWord, paragraph->TextWords)
+class TextWords:
+    def __init__(self, TextWord):
+        self.runs = TextWord
+
+    def text(self):
+        return " ".join(str(run) for run in self.runs)

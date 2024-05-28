@@ -161,17 +161,3 @@ class Word:
     find_list = ['"', "'", "<", ">", ",", ".", "?", "!"]
     symbol_sentence = r"(?<=[.,!?])\s*"
     # 문장 끝에 오는 마침표, 느낌표랑 문장 앞에 올 괄호, 따옴표 구별 필요
-
-
-"""ppt = PPT_SONG
-
-print(ppt.size)  # 46
-
-# 동적으로 문자열을 구성하여 enum 항목에 접근
-enum_name = f"SIZE{ppt.size}"
-enum_value = getattr(TextLengthInOneLine, enum_name).value
-
-print(enum_name)  # "SIZE46"
-print(enum_value)  # 63
-
-print("되나?", getattr(TextLengthInOneLine, f"SIZE{ppt.size}").value)"""
