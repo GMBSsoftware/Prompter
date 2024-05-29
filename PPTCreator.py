@@ -11,9 +11,10 @@ import re
 
 
 class PPTCreator:
-    def __init__(self) -> None:
+    def __init__(self, back_color) -> None:
         self.prs = Presentation()
         self.set_slide_layout()
+        self.set_slide_back_color(back_color)
 
     def generate_PPT(self, file_name):
         # 프레젠테이션 파일 저장
@@ -73,9 +74,10 @@ class PPTCreator:
         # 제목만 있는 슬라이드 레이아웃 가져오기
         self.slide_layout = self.prs.slide_master.slide_layouts[5]
 
-        # 배경색 설정
+    # 배경색 설정
+    def set_slide_back_color(self, color):
         self.prs.slide_master.background.fill.solid()
-        self.prs.slide_master.background.fill.fore_color.rgb = PPT_SONG.back_color
+        self.prs.slide_master.background.fill.fore_color.rgb = color
 
     def add_new_slide(self):
         # 슬라이드 추가

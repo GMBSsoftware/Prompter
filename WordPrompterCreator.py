@@ -2,6 +2,8 @@ from WordReader import WordReader
 from PPTCreator import PPTCreator
 from Setting import Word
 from Setting import Pattern
+from Setting import PPT_WORD
+from Text import TextWords, TextWord
 from Default import Default
 import re, os
 from pptx.util import Pt
@@ -101,13 +103,13 @@ class WordPrompterCreator:
         doc = Document(
             "C:\\Users\\cbs97\\AppData\\Local\\Programs\\Python\\Python311\\test.docx"
         )
-        self.ppt = PPTCreator()
+        self.ppt = PPTCreator(PPT_WORD.back_color)
         slide = self.ppt.add_new_slide()
         text_words = self.word_reader.convert(doc)
 
         # 나눠서 넣네...... 이걸 어떡한담.....
 
-        for paragraph in doc.paragraphs:
+        for paragraph in text_words:
             self.ppt.enter(slide)
             slide = self.max_process(paragraph, slide)
 
@@ -116,6 +118,8 @@ class WordPrompterCreator:
 
     # utf-8로 인코드 했을 때 텍스트의 바이트 구하는 메서드
     def length(self, text):
+        if isinstance(text, TextWords) or isinstance(text, TextWord):
+            text = text.text
         return len(text.encode("utf-8"))
 
     def split_space(self, text):
@@ -171,8 +175,15 @@ class WordPrompterCreator:
         return return_texts
 
     # 절반으로 분리.
-    def split_text_half(self, text):
-        return_text = []
+    def split_text_half(self, runs):
+        return_text_words = TextWords()
+        half_length = len(runs) // 2
+
+        return_text_words.add_run(runs[:half_length])
+        return_text_words.add_run(runs[half_length:])
+
+        return return_text_words
+        """return_text = []
         # 공백을 기준으로 텍스트를 분할
         words = text.split()
 
@@ -181,24 +192,22 @@ class WordPrompterCreator:
         # 분할된 텍스트를 절반으로 자르기. 각 단어 공백 유지.
         return_text.append(" ".join(words[:half_length]))
         return_text.append(" ".join(words[half_length:]))
-        return return_text
+        return return_text"""
 
     def new_process(self, paragraph, max_byte):
-
-        # 아.. 이거 파라그래프 단위랑 텍스트랑 어떻게 변환하냐........
-
-        text = self.split_double_quotation_marks(
+        """text = self.split_double_quotation_marks(
             self.split_quotation_marks(self.split_space(text))
-        )
+        )"""
+        text = paragraph.text
+
         # 잘 나눠져서 길이 안 넘으면
         if not self.check_over_length(
-            self.join_comma_ideal(self.join_space(text), self.max_byte),
+            self.join_comma_ideal(text, self.max_byte),
             self.max_byte,
         ):
-            # print("===========좋아 join_comma_ideal로 합침============")
-            return self.join_comma_ideal(self.join_space(text), self.max_byte)
+            return self.join_comma_ideal(paragraph, self.max_byte)
         # join 반환은 최대한 안 해야됨. 무식하게 그냥 붙이는거야.
-        return self.join(text, max_byte)
+        return self.join(paragraph, max_byte)
 
     # 텍스트 or 텍스트 리스트들의 길이가 초과했는지 체크
     def check_over_length(self, text_or_texts, max_byte):
@@ -229,7 +238,7 @@ class WordPrompterCreator:
                 slide_text += paragraph.text + "\n"
 
         slide_line = slide_text.strip().count("\n") + 1
-        text_line = -0
+        text_line = 0
 
         if text == "":
             text_line = 0
@@ -255,18 +264,17 @@ class WordPrompterCreator:
 
         # 최대 글자 초과시 분리, 재조합 프로세스 실행
         if self.check_over_length(text, self.max_byte):
-            # print("최대 글자를 넘으므로 분리 시작")
-            pass
+
             text = self.new_process(paragraph, self.max_byte)
 
         # 기존 슬라이드 줄 수 + 현재 텍스트의 줄수가 최대 줄 수 초과
         if self.check_over_line(text, slide):
-            # print("새 슬라이드에 작성")
-            # 나누기
+
             self.slides.append(slide)
             slide = self.ppt.add_new_slide()
             self.join_text(slide, paragraph)
             return slide
+
         # 최대 줄 수 미만이라 이어 붙이기
         else:
             # print("기존 슬라이드에 작성")
@@ -279,6 +287,7 @@ class WordPrompterCreator:
     # 컴마를 기준으로 나눴을 때 이상적으로 나눠지면 나눠서 반환, 아니면 그대로 반환하는 메서드
     def join_comma_ideal(self, text, max_byte):
         comma_index = -1
+        text = str(text)
         while True:
             # 현재 콤마의 인덱스를 찾습니다.
             comma_index = text.find(",", comma_index + 1)
@@ -304,22 +313,26 @@ class WordPrompterCreator:
 
     # max_byte 길이 찰 때까지 쭉 이어붙이는 메서드
     def join(self, texts, max_byte):
-        result = ""
+        result = TextWords()
         return_texts = []
         for word in texts:
             # max_byte 이하일 때 쭉 이어붙이기
             if (self.length(result) + self.length(word)) < max_byte:
-                result += word + " "
+                result.add_run(word)
             # max_byte 넘어가서 반환할 배열에 추가 후 다시 반복
             else:
                 return_texts.append(result)
-                result = word + " "
+                result = TextWords()
+                result.add_run(word)
         return_texts.append(result)
         if len(return_texts) > 1:
-            last_text = return_texts[-2] + return_texts[-1]
+            last_text = []
+            last_text.extend(return_texts[-2])
+            last_text.extend(return_texts[-1])
             return_texts = return_texts[:-2]
             return_texts.extend(self.split_text_half(last_text))
         # print("안타깝게 join으로 합친 텍스트 :", "\n".join(return_texts))
+        return return_texts
         return "\n".join(return_texts)
 
     # 나눠진 텍스트들의 길이가 2배 이상 차이나는지 비교
@@ -347,21 +360,28 @@ class WordPrompterCreator:
         p = title_text_frame.paragraphs[-1]  # 마지막 단락 선택
         for word_run in paragraph.runs:
             slide_run = p.add_run()
-            slide_run.text = word_run.text
+            slide_run.text = word_run.text + " "
             slide_run.font.name = self.person.font
             slide_run.font.size = Pt(self.person.size)
             # 색상 없으면 기본 색상
-            if word_run.font.color.rgb is None:
+            if word_run.color is None:
                 slide_run.font.color.rgb = self.person.default_color
             # 색상 있으면 그 색상 그대로
             else:
                 # 워드에서 받은 객체랑 ppt에 쓸 객체가 서로 달라서 직접 변환 시켜줘야됨
-                color = str(word_run.font.color.rgb)
+                color = str(word_run.color)
                 slide_run.font.color.rgb = RGBColor(
                     int(color[0:2], 16),
                     int(color[2:4], 16),
                     int(color[4:6], 16),
                 )
+            # 굵은 글씨
+            if not word_run.bold is None:
+                slide_run.font.bold = True
+
+            # 밑줄
+            if not word_run.underline is None:
+                slide_run.font.underline = True
 
 
 text = """존재물도 사연도 신기하고 오묘하지만, 그것들을 만들고 행하시는 전능자 하나님과, 성령과 성자가 신비하고 오묘한 기묘자이심을, 온전히 깨닫고 대화하며 살아라. """

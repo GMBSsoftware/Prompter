@@ -1,5 +1,6 @@
 from Setting import TextColor
 from Setting import TextType
+from collections.abc import Iterable
 
 
 class Text:
@@ -70,8 +71,21 @@ class TextWord(Text):
 
 # pptx 라이브러리의 paragraph처럼 사용하기 위해. (run->TextWord, paragraph->TextWords)
 class TextWords:
-    def __init__(self, TextWord):
-        self.runs = TextWord
+    def __init__(self, text_words=None):
+        if text_words:
+            self.runs = text_words
+        else:
+            self.runs = []
 
+    @property
     def text(self):
         return " ".join(str(run) for run in self.runs)
+
+    def __iter__(self):
+        return iter(self.runs)
+
+    def add_run(self, TextWord):
+        if isinstance(TextWord, Iterable) and not isinstance(TextWord, str):
+            self.runs.extend(TextWord)
+        else:
+            self.runs.append(TextWord)

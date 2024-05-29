@@ -1,6 +1,7 @@
 from TextSplitter import TextSplitter
 from TextClassifier import TextClassifier
 from PPTCreator import PPTCreator
+from Setting import PPT_SONG
 import sys
 import os
 from CaptionCreator import CaptionCreator
@@ -38,7 +39,7 @@ type = input()
 
 if type == "1":
     texts = text_splitter.split_long_texts(classified_texts)
-    ppt = PPTCreator()
+    ppt = PPTCreator(PPT_SONG.back_color)
     ppt.create_slide(texts)
 
     print("\n==================== success ====================\n")
