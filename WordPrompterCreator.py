@@ -174,15 +174,15 @@ class WordPrompterCreator:
         return return_texts
 
     # 절반으로 분리.
-    def split_text_half(self, runs):
+    def split_text_half(self, texts):
         sentences = []
         text_words = Sentence()
-        half_length = len(runs) // 2
+        half_length = texts.text.text // 2
 
-        text_words.add_word(runs[:half_length])
+        text_words.add_word(texts[:half_length])
         sentences.append(text_words)
         text_words = Sentence()
-        text_words.add_word(runs[half_length:])
+        text_words.add_word(texts[half_length:])
         sentences.append(text_words)
 
         return Paragraph(sentences)
@@ -334,14 +334,12 @@ class WordPrompterCreator:
                 result.add_word(word)
         return_texts.append(result)
         if len(return_texts) > 1:
-            last_text = []
-            last_text.extend(return_texts[-2])
-            last_text.extend(return_texts[-1])
+            last_text = Paragraph()
+            last_text.add_sentence(return_texts[-2])
+            last_text.add_sentence(return_texts[-1])
             return_texts = return_texts[:-2]
             return_texts.extend(self.split_text_half(last_text))
-        # print("안타깝게 join으로 합친 텍스트 :", "\n".join(return_texts))
         return return_texts
-        return "\n".join(return_texts)
 
     # 나눠진 텍스트들의 길이가 2배 이상 차이나는지 비교
     def check_length_over_twice(self, texts):
@@ -366,7 +364,7 @@ class WordPrompterCreator:
         title_shape = slide.shapes.title
         title_text_frame = title_shape.text_frame
         p = title_text_frame.paragraphs[-1]  # 마지막 단락 선택
-        for word_run in paragraph.runs:
+        for word_run in paragraph.words:
             slide_run = p.add_run()
             slide_run.text = word_run.text + " "
             slide_run.font.name = self.person.font

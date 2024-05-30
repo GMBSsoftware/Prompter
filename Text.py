@@ -94,7 +94,7 @@ class Sentence:
 
 # 문단
 class Paragraph:
-    def __init__(self, sentences):
+    def __init__(self, sentences=None):
         if sentences:
             self.sentences = sentences
         else:
@@ -108,7 +108,4 @@ class Paragraph:
         return iter(self.sentences)
 
     def add_sentence(self, Sentence):
-        if isinstance(Sentence, Iterable) and not isinstance(Sentence, str):
-            self.sentences.extend(Sentence)
-        else:
-            self.sentences.append(Sentence)
+        self.sentences.append(Sentence)
