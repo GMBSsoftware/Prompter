@@ -177,6 +177,9 @@ class WordPrompterCreator:
     def split_text_half(self, texts):
         sentences = []
         text_words = Sentence()
+
+        # 문단에서 다시 문장이나 단어 단위로 가져와서 절반 체크 후 분리 필요.
+
         half_length = texts.text.text // 2
 
         text_words.add_word(texts[:half_length])
