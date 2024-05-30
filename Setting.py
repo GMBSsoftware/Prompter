@@ -134,8 +134,7 @@ class Caption:
     ]
 
 
-class Word:
-    max_line = 8
+class Symbol:
     symbol_important = ["◎", "◆", "◇", "◈"]
     symbol_other = [
         "-",

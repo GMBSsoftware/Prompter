@@ -1,6 +1,6 @@
 from docx import Document
-from Text import TextWord
-from Text import TextWords
+from Text import Word
+from Text import Sentence
 import os, re
 
 
@@ -42,7 +42,7 @@ class WordReader:
                 splitted_runs = run.text.split()
                 for i in splitted_runs:
                     text_words.append(
-                        TextWord(
+                        Word(
                             i,
                             run.font.name,
                             run.font.color.rgb if run.font.color else None,
@@ -51,7 +51,7 @@ class WordReader:
                         )
                     )
                     is_enter = False
-            return_text_words.append(TextWords(text_words))
+            return_text_words.append(Sentence(text_words))
         return return_text_words
 
 

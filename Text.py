@@ -51,7 +51,8 @@ class TextSong(Text):
         return f"Text:\n {self.text}\n Type: {self.text_type}, Color: {self.text_color}\n\n"
 
 
-class TextWord(Text):
+# 단어
+class Word(Text):
     def __init__(self, text, font, color=TextColor.BLACK, bold=None, underline=None):
         self.text = text
         self.font = font
@@ -69,23 +70,45 @@ class TextWord(Text):
         return f"Text: {self.text}\n Font: {self.font}, Color: {self.color}\n bold: {self.bold}, underline: {self.underline}\n\n"
 
 
-# pptx 라이브러리의 paragraph처럼 사용하기 위해. (run->TextWord, paragraph->TextWords)
-class TextWords:
-    def __init__(self, text_words=None):
-        if text_words:
-            self.runs = text_words
+# 문장
+class Sentence:
+    def __init__(self, words=None):
+        if words:
+            self.words = words
         else:
-            self.runs = []
+            self.words = []
 
     @property
     def text(self):
-        return " ".join(str(run) for run in self.runs)
+        return " ".join(str(word) for word in self.words)
 
     def __iter__(self):
-        return iter(self.runs)
+        return iter(self.words)
 
-    def add_run(self, TextWord):
-        if isinstance(TextWord, Iterable) and not isinstance(TextWord, str):
-            self.runs.extend(TextWord)
+    def add_word(self, Word):
+        if isinstance(Word, Iterable) and not isinstance(Word, str):
+            self.words.extend(Word)
         else:
-            self.runs.append(TextWord)
+            self.words.append(Word)
+
+
+# 문단
+class Paragraph:
+    def __init__(self, sentences):
+        if sentences:
+            self.sentences = sentences
+        else:
+            self.sentences = []
+
+    @property
+    def text(self):
+        return "\n".join(str(sentence) for sentence in self.sentences)
+
+    def __iter__(self):
+        return iter(self.sentences)
+
+    def add_sentence(self, Sentence):
+        if isinstance(Sentence, Iterable) and not isinstance(Sentence, str):
+            self.sentences.extend(Sentence)
+        else:
+            self.sentences.append(Sentence)

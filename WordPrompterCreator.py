@@ -1,9 +1,8 @@
 from WordReader import WordReader
 from PPTCreator import PPTCreator
-from Setting import Word
 from Setting import Pattern
 from Setting import PPT_WORD
-from Text import TextWords, TextWord
+from Text import Sentence, Word, Paragraph
 from Default import Default
 import re, os
 from pptx.util import Pt
@@ -16,7 +15,7 @@ from pptx.slide import Slide
 class WordPrompterCreator:
     def __init__(self) -> None:
         self.titles = []
-        self.max_line = Word.max_line
+        self.max_line = PPT_WORD.max_line
         # 설정 해야함.
         self.max_byte = 60
         self.slides = []
@@ -60,7 +59,7 @@ class WordPrompterCreator:
                     self.start_index = i
                     return
 
-    def make_prompter(self, file_name):
+    """def make_prompter(self, file_name):
         doc = WordReader.openfile(file_name)
         self.ppt = PPTCreator()
         is_vedio = False
@@ -78,7 +77,7 @@ class WordPrompterCreator:
                 # 정규식을 그냥 끝으로 퉁쳐도 되나?
             if is_vedio:
                 continue
-            elif any(symbol in text for symbol in Word.symbol_important):
+            elif any(word in text for word in Word.word):
                 self.slides.append(slide)
                 slide = self.ppt.add_new_slide()
                 self.join_text(slide, text)
@@ -96,7 +95,7 @@ class WordPrompterCreator:
             elif text == "":
                 self.ppt.enter(slide)
             else:
-                pass
+                pass"""
 
     # 그냥 워드 파일 그대로 ppt 파일로 생성
     def prompter_default(self):
@@ -118,7 +117,7 @@ class WordPrompterCreator:
 
     # utf-8로 인코드 했을 때 텍스트의 바이트 구하는 메서드
     def length(self, text):
-        if isinstance(text, TextWords) or isinstance(text, TextWord):
+        if isinstance(text, Sentence) or isinstance(text, Word):
             text = text.text
         return len(text.encode("utf-8"))
 
@@ -176,13 +175,17 @@ class WordPrompterCreator:
 
     # 절반으로 분리.
     def split_text_half(self, runs):
-        return_text_words = TextWords()
+        sentences = []
+        text_words = Sentence()
         half_length = len(runs) // 2
 
-        return_text_words.add_run(runs[:half_length])
-        return_text_words.add_run(runs[half_length:])
+        text_words.add_word(runs[:half_length])
+        sentences.append(text_words)
+        text_words = Sentence()
+        text_words.add_word(runs[half_length:])
+        sentences.append(text_words)
 
-        return return_text_words
+        return Paragraph(sentences)
         """return_text = []
         # 공백을 기준으로 텍스트를 분할
         words = text.split()
@@ -243,7 +246,12 @@ class WordPrompterCreator:
         if text == "":
             text_line = 0
         else:
-            text_line = text.count("\n") + 1
+            if isinstance(text, str):
+                text_line = text.count("\n") + 1
+            # 텍스트가
+            else:
+                text_line = len(text)
+            # text_line = text.count("\n") + 1
 
         if slide_line + text_line > self.max_line:
             return True
@@ -313,17 +321,17 @@ class WordPrompterCreator:
 
     # max_byte 길이 찰 때까지 쭉 이어붙이는 메서드
     def join(self, texts, max_byte):
-        result = TextWords()
+        result = Sentence()
         return_texts = []
         for word in texts:
             # max_byte 이하일 때 쭉 이어붙이기
             if (self.length(result) + self.length(word)) < max_byte:
-                result.add_run(word)
+                result.add_word(word)
             # max_byte 넘어가서 반환할 배열에 추가 후 다시 반복
             else:
                 return_texts.append(result)
-                result = TextWords()
-                result.add_run(word)
+                result = Sentence()
+                result.add_word(word)
         return_texts.append(result)
         if len(return_texts) > 1:
             last_text = []
