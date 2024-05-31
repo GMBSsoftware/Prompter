@@ -100,14 +100,15 @@ class WordPrompterCreator:
     # 그냥 워드 파일 그대로 ppt 파일로 생성
     def prompter_default(self):
         doc = Document(
-            "C:\\Users\\cbs97\\AppData\\Local\\Programs\\Python\\Python311\\test.docx"
+            #"C:\\Users\\cbs97\\AppData\\Local\\Programs\\Python\\Python311\\test.docx"
+            r"C:\Users\user\AppData\Local\Programs\Python\Python312\test.docx"
         )
         self.ppt = PPTCreator(PPT_WORD.back_color)
         slide = self.ppt.add_new_slide()
         text_words = self.word_reader.convert(doc)
 
         for paragraph in text_words:
-            self.ppt.enter(slide)
+            #self.ppt.enter(slide)
             slide = self.max_process(paragraph, slide)
 
         desktop_directory = os.path.join(os.path.expanduser("~"), "Desktop")
@@ -380,10 +381,10 @@ class WordPrompterCreator:
                 run.text = "\n"
 
         elif isinstance(paragraph, Sentence):
-            if paragraph.text == "":
-                return
             for word in paragraph:
                 self.add_text(ppt_paragraph, word)
+            run = ppt_paragraph.add_run()
+            run.text = "\n"
 
     # ppt 슬라이드에 글, 폰트, 색상, 굵은 글씨, 밑줄 적용해서 쓰기
     def add_text(self, ppt_paragraph, word):
