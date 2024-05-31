@@ -50,7 +50,7 @@ class WordReader:
                             run.underline,
                         )
                     )
-                    is_enter = False
+                is_enter = False
             return_text_words.append(Sentence(text_words))
         return return_text_words
 

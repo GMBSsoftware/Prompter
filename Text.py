@@ -109,3 +109,15 @@ class Paragraph:
 
     def add_sentence(self, Sentence):
         self.sentences.append(Sentence)
+
+    def __getitem__(self, index):
+        return self.sentences[index]
+
+    # get하면 제거됨
+    def get_and_remove(self, index):
+        if isinstance(index, slice):
+            result = self.sentences[index]
+            del self.sentences[index]
+            return result
+        else:
+            return self.sentences.pop(index)
