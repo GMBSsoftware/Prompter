@@ -186,21 +186,6 @@ class WordPrompterCreator:
 
         return sentences
 
-    def new_process(self, paragraph, max_byte):
-        """text = self.split_double_quotation_marks(
-            self.split_quotation_marks(self.split_space(text))
-        )"""
-        text = paragraph.text
-
-        # 잘 나눠져서 길이 안 넘으면
-        if not self.check_over_length(
-            self.join_comma_ideal(text, self.max_byte),
-            self.max_byte,
-        ):
-            return self.join_comma_ideal(paragraph, self.max_byte)
-        # join 반환은 최대한 안 해야됨. 무식하게 그냥 붙이는거야.
-        return self.join(paragraph, max_byte)
-
     # 텍스트 or 텍스트 리스트들의 길이가 초과했는지 체크
     def check_over_length(self, text_or_texts, max_byte):
         # 텍스트가 한 개면 리스트화해서 반복
@@ -272,17 +257,15 @@ class WordPrompterCreator:
 
         # 최대 글자 초과시 분리, 재조합 프로세스 실행
         if self.check_over_length(paragraph.text, self.max_byte):
-            paragraph = self.new_process(paragraph, self.max_byte)
-
-            text = paragraph.text
             # 컴마로 나눌 때 이상적으로 잘 나눠져서 길이 안 넘으면
             if not self.check_over_length(
                 self.join_comma_ideal(paragraph.text, self.max_byte),
                 self.max_byte,
             ):
                 paragraph = self.join_comma_ideal(paragraph, self.max_byte)
-            # join 반환은 최대한 안 해야됨. 무식하게 그냥 붙이는거야.
-            return self.join(paragraph, max_byte)
+            else:
+                # 그냥 길이 맞춰서 이어붙이는 메서드
+                paragraph = self.join(paragraph, self.max_byte)
 
         if self.check_over_line(paragraph):
             paragraphs = self.split_over_line(paragraph, self.max_line)
