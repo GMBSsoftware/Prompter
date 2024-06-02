@@ -100,15 +100,15 @@ class WordPrompterCreator:
     # 그냥 워드 파일 그대로 ppt 파일로 생성
     def prompter_default(self):
         doc = Document(
-            #"C:\\Users\\cbs97\\AppData\\Local\\Programs\\Python\\Python311\\test.docx"
-            r"C:\Users\user\AppData\Local\Programs\Python\Python312\test.docx"
+            "C:\\Users\\cbs97\\AppData\\Local\\Programs\\Python\\Python311\\test.docx"
+            # r"C:\Users\user\AppData\Local\Programs\Python\Python312\test.docx"
         )
         self.ppt = PPTCreator(PPT_WORD.back_color)
         slide = self.ppt.add_new_slide()
         text_words = self.word_reader.convert(doc)
 
         for paragraph in text_words:
-            #self.ppt.enter(slide)
+            # self.ppt.enter(slide)
             slide = self.max_process(paragraph, slide)
 
         desktop_directory = os.path.join(os.path.expanduser("~"), "Desktop")
@@ -273,6 +273,16 @@ class WordPrompterCreator:
         # 최대 글자 초과시 분리, 재조합 프로세스 실행
         if self.check_over_length(paragraph.text, self.max_byte):
             paragraph = self.new_process(paragraph, self.max_byte)
+
+            text = paragraph.text
+            # 컴마로 나눌 때 이상적으로 잘 나눠져서 길이 안 넘으면
+            if not self.check_over_length(
+                self.join_comma_ideal(paragraph.text, self.max_byte),
+                self.max_byte,
+            ):
+                paragraph = self.join_comma_ideal(paragraph, self.max_byte)
+            # join 반환은 최대한 안 해야됨. 무식하게 그냥 붙이는거야.
+            return self.join(paragraph, max_byte)
 
         if self.check_over_line(paragraph):
             paragraphs = self.split_over_line(paragraph, self.max_line)
