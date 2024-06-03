@@ -1,5 +1,6 @@
 from Setting import TextColor
 from Setting import TextLengthInOneLine
+from Setting import PPT_WORD
 from pptx.dml.color import RGBColor
 
 # from WordPrompterCreator import WordPrompterCreator
@@ -8,18 +9,16 @@ from pptx.dml.color import RGBColor
 class Default:
     def __init__(self) -> None:
         # 글자 색 설정
-        TextColor.RED = RGBColor(250, 0, 0)
-        self.default_color = TextColor.WHITE
+        self.default_color = PPT_WORD.default_color
 
         # 폰트 설정
-        self.font = "옥션고딕 B"
+        self.font = PPT_WORD.font
 
         # 글자 크기 설정
-        self.size = 48
+        self.size = PPT_WORD.size
 
         # 줄 당 최대 글자 수 설정
-        enum_name = f"SIZE{self.size}"
-        self.max_byte = getattr(TextLengthInOneLine, enum_name).value
+        self.max_byte = PPT_WORD.max_byte_in_one_line
 
     def process_bible(self, paragraph, slide):
         # 성경 구절이 따로 쓰이지 않음 (말씀과 폰트가 같음)

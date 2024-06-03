@@ -34,7 +34,7 @@ class TextClassifier:
         while splitted_texts:
             text = TextSong(splitted_texts.pop(0))
             # 파일명
-            if bool(re.search(Pattern.file_name, str(text))):
+            if bool(re.search(Pattern.file_name_song, str(text))):
                 text.set_text(self.get_file_name(str(text)))
                 text.set_text_type(TextType.FILE_NAME)
             elif "오프닝" in str(text):

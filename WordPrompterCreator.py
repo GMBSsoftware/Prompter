@@ -2,6 +2,7 @@ from WordReader import WordReader
 from PPTCreator import PPTCreator
 from Setting import Pattern
 from Setting import PPT_WORD
+from Setting import Symbol
 from Text import Sentence, Word, Paragraph
 from Default import Default
 import re, os
@@ -17,47 +18,54 @@ class WordPrompterCreator:
         self.titles = []
         self.max_line = PPT_WORD.max_line
         # 설정 해야함.
-        self.max_byte = 60
+        self.max_byte = PPT_WORD.max_byte_in_one_line
         self.slides = []
         self.person = Default()
         self.word_reader = WordReader()
 
     # 워드 문서 읽어와서 파일명, 제목 저장. 말씀 시작 부분 위치 저장. 기본 폰트 저장.
-    def process_first(self, doc):
+    def process_first(self, text_words):
+        return_text_words = []
         is_before_bible = True
         bible_font = ""
         i = -1
-        for paragraph in doc.paragraphs:
-            text = paragraph.text
+        for sentence in text_words:
             i += 1
             # "본문" 단어 나오기 이전
             if is_before_bible:
                 # "본문"
-                if bool(re.search(Pattern.bible_guide, text)):
+                if bool(re.search(Pattern.bible_guide, sentence.text)):
                     is_before_bible = False
                     continue
                 # o 월 o 일 oo 말씀
-                if bool(re.search(Pattern.word_file_name, text)):
-                    self.file_name = text
+                if bool(re.search(Pattern.file_name_word, sentence.text)):
+                    self.file_name = re.search(
+                        Pattern.file_name_word, sentence.text
+                    ).group()
+                    return_text_words.append(sentence)
                 # 공백이 아닌 경우에만 주제에 추가
-                elif text.strip():
-                    self.titles.append(text)
+                elif sentence.text.strip():
+                    self.titles.append(sentence.text)
+                    return_text_words.append(sentence)
             else:
                 # 공백일 때 건너뛰기
-                if text == "":
-                    continue
+                if sentence.text == "":
+                    return_text_words.append(sentence)
                 # 성경 구절 정규식일 때
-                if bool(re.search(Pattern.bible, text)):
-                    bible_font = paragraph.runs[0].font.name
+                elif bool(re.search(Pattern.bible, sentence.text)):
+                    bible_font = sentence[0].font
                     continue
                 # 성경 구절 문단을 나눠썼을 때는 폰트로 구별.
-                elif paragraph.runs[0].font.name == bible_font:
+                elif sentence[0].font == bible_font:
                     continue
                 # 말씀 시작 부분
                 else:
-                    self.word_font = paragraph.runs[0].font.name
+                    self.word_font = sentence[0].font
                     self.start_index = i
-                    return
+                    return_text_words.append(sentence)
+                    break
+        return_text_words.extend([text_words[self.start_index :]])
+        return return_text_words
 
     """def make_prompter(self, file_name):
         doc = WordReader.openfile(file_name)
@@ -107,12 +115,13 @@ class WordPrompterCreator:
         slide = self.ppt.add_new_slide()
         text_words = self.word_reader.convert(doc)
 
+        text_words = self.process_first(text_words)
+
         for paragraph in text_words:
-            # self.ppt.enter(slide)
             slide = self.max_process(paragraph, slide)
 
         desktop_directory = os.path.join(os.path.expanduser("~"), "Desktop")
-        self.ppt.prs.save(f"{desktop_directory}/hi.pptx")
+        self.ppt.prs.save(f"{desktop_directory}/{self.file_name}.pptx")
 
     # utf-8로 인코드 했을 때 텍스트의 바이트 구하는 메서드
     def length(self, text):
@@ -266,6 +275,20 @@ class WordPrompterCreator:
             else:
                 # 그냥 길이 맞춰서 이어붙이는 메서드
                 paragraph = self.join(paragraph, self.max_byte)
+
+        # 중요 기호들은 새 슬라이드에서 시작.
+        if isinstance(paragraph, Sentence):
+            check_symbol_text = paragraph.text
+        elif isinstance(paragraph, Paragraph):
+            check_symbol_text = paragraph[0].text
+
+        # 중요 기호 있고, 빈 슬라이드가 아니면 새 슬라이드에서 시작.
+        if (
+            any(symbol in check_symbol_text for symbol in Symbol.symbol_important)
+            and not slide.shapes.title.text == "\n"
+        ):
+            self.slides.append(slide)
+            slide = self.ppt.add_new_slide()
 
         if self.check_over_line(paragraph):
             paragraphs = self.split_over_line(paragraph, self.max_line)

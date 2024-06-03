@@ -28,22 +28,6 @@ class TextColor:
     BLACK = RGBColor(0, 0, 0)
 
 
-class TextColorJHI(TextColor):
-    RED = RGBColor(200, 0, 0)
-
-
-class TextColorHMH(TextColor):
-    pass
-
-
-class TextColorLWD(TextColor):
-    pass
-
-
-class TextColorJJS(TextColor):
-    pass
-
-
 class TextLengthInOneLine(Enum):
     # 옥션고딕 B 기준. 한 줄 최대 글자수 * 3 (utp-8은 한 글자가 3byte)
     SIZE30 = 33 * 3
@@ -66,14 +50,14 @@ class TextLengthInOneLine(Enum):
 
 
 class Pattern:
-    file_name = r"\d{1,2}\s*월\s*\d{1,2}\s*일.*찬양"
+    file_name_song = r"\d{1,2}\s*월\s*\d{1,2}\s*일.*찬양"
     song_title = r"(^\d[).]|1️⃣|2️⃣|3️⃣|4️⃣|5️⃣|6️⃣|7️⃣).+(?=\n|$)"
     ment_guide = r"멘트.*?\n"
     # lyrics_guide = r"가사.*?\n"
     caption = r"(\(|\[|\<).*?(\)|\]|\>)"
     lyrics_guide = r"^가사$|(\(|\<|\[)가사(\)|\>|\])"
 
-    word_file_name = r"\d{1,2}\s*월\s*\d{1,2}\s*일.*말씀"
+    file_name_word = r"\d{1,2}\s*년\s*\d{1,2}\s*월\s*\d{1,2}\s*일.*말씀"
     vedio = r"(\(|\[|\<)*영상\s*\d?\d?\s*(\)|\]|\>)"
     caption = r"(\(|\[|\<)*자막\s*\d?\d?\s*(\)|\]|\>)"
     end = r"(\(|\[|\<)*끝\s*(\)|\]|\>)"
@@ -89,6 +73,7 @@ class PPT_SONG:
     # 글자 크기 기준 한 줄 최대 글자(byte) 수
     max_byte_in_one_line = getattr(TextLengthInOneLine, f"SIZE{size}").value
     back_color = TextColor.BLACK
+    default_color = TextColor.WHITE
 
 
 class PPT_WORD:
@@ -97,6 +82,7 @@ class PPT_WORD:
     size = 48
     max_byte_in_one_line = getattr(TextLengthInOneLine, f"SIZE{size}").value
     back_color = TextColor.WHITE
+    default_color = TextColor.BLACK
 
 
 class Caption:
