@@ -79,7 +79,7 @@ class PPT_SONG:
 class PPT_WORD:
     max_line = 6
     font = "옥션고딕 B"
-    size = 48
+    size = 50
     max_byte_in_one_line = getattr(TextLengthInOneLine, f"SIZE{size}").value
     back_color = TextColor.WHITE
     default_color = TextColor.BLACK

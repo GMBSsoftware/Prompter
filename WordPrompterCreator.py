@@ -44,8 +44,11 @@ class WordPrompterCreator:
                     ).group()
                     return_text_words.append(sentence)
                 # 공백이 아닌 경우에만 주제에 추가
-                elif sentence.text.strip():
+                elif not sentence.text == "":
                     self.titles.append(sentence.text)
+                    return_text_words.append(sentence)
+                # 공백이면
+                else:
                     return_text_words.append(sentence)
             else:
                 # 공백일 때 건너뛰기
@@ -61,10 +64,11 @@ class WordPrompterCreator:
                 # 말씀 시작 부분
                 else:
                     self.word_font = sentence[0].font
-                    self.start_index = i
+                    # 말씀 부분일 때 바로 아래줄에서 append 해주니까 +1
+                    self.start_index = i + 1
                     return_text_words.append(sentence)
                     break
-        return_text_words.extend([text_words[self.start_index :]])
+        return_text_words.extend(text_words[self.start_index :])
         return return_text_words
 
     """def make_prompter(self, file_name):
