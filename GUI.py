@@ -7,6 +7,8 @@ class GUI:
         # 생성할 프로그램 가로 세로 크기
         self.app_width = 400
         self.app_height = 250
+        # 현재 화면을 나타내는 프레임
+        self.current_frame = None
 
     def base(self):
         self.root.title("Prompter Auto Maker")
@@ -15,8 +17,8 @@ class GUI:
         windows_width = self.root.winfo_screenwidth()
         windows_height = self.root.winfo_screenheight()
         # 생성할 프로그램 가로 세로 크기
-        self.app_width = 400
-        self.app_height = 250
+        self.app_width = 800
+        self.app_height = 500
         # 화면 중앙에 위치 시키기
         center_width = (windows_width / 2) - (self.app_width / 2)
         center_height = (windows_height / 2) - (self.app_height / 2)
@@ -31,18 +33,28 @@ class GUI:
         label = tk.Label(
             self.root, text="Ver3.0    Made by\n광명방송국 개발팀", justify="right"
         )
-        label.pack(side="bottom", anchor="se")  # 하단에 정렬
-        # label.place(x=self.app_width - 120, y=self.app_height - 50)
+        # label.pack(side="bottom", anchor="se")  # 하단에 정렬
+        label.place(x=self.app_width - 120, y=self.app_height - 50)
+
+        # 라벨 구간 뺀 크기
+        self.frame_width = self.app_width
+        self.frame_height = self.app_height - 60
 
     def frame_home(self):
+        # 현재 프레임이 있으면 제거
+        if self.current_frame:
+            self.current_frame.destroy()
 
         # 프레임 생성
-        self.frame = tk.Frame(self.root)
-        self.frame.pack(fill="both", expand=True)
-        self.frame.place(x=0, y=0, width=self.app_width, height=self.app_height)
+        self.current_frame = tk.Frame(self.root)
+        self.current_frame.pack(fill="both", expand=True)
+        self.current_frame.place(
+            x=0, y=0, width=self.frame_width, height=self.frame_height
+        )
 
+        # 버튼 생성
         song_button = tk.Button(
-            self.root, text="찬양", command=self.on_song_click, relief="groove"
+            self.current_frame, text="찬양", command=self.on_song_click, relief="groove"
         )
         song_button.place(
             # x에 -50은 버튼 너비
@@ -52,22 +64,26 @@ class GUI:
             height=100,
         )
         word_button = tk.Button(
-            self.root, text="설교", command=self.on_word_click, relief="groove"
+            self.current_frame, text="설교", command=self.on_word_click, relief="groove"
         )
         word_button.place(
             x=self.app_width / 2 + 30, y=self.app_height / 2 - 70, width=100, height=100
         )
 
     def screen_song(self):
+        # 현재 프레임이 있으면 제거
+        if self.current_frame:
+            self.current_frame.destroy()
+
         # 프레임 생성
-        self.frame = tk.Frame(self.root)
-        self.frame.pack(fill="both", expand=True)
-        self.frame.place(
-            x=50, y=50, width=self.app_width / 3, height=self.app_height / 3
+        self.current_frame = tk.Frame(self.root)
+        self.current_frame.pack(fill="both", expand=True)
+        self.current_frame.place(
+            x=0, y=0, width=self.frame_width, height=self.frame_height
         )
 
         # 텍스트 상자 추가
-        text_entry = tk.Text(self.frame)
+        text_entry = tk.Text(self.current_frame)  # 프레임에 추가
         text_entry.pack(fill="both", expand=True)
 
     def screen_word(self):
