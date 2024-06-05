@@ -1,6 +1,7 @@
 from docx import Document
 from Text import Word
 from Text import Sentence
+from Setting import TextColor
 import os, re
 
 
@@ -45,7 +46,12 @@ class WordReader:
                         Word(
                             i,
                             run.font.name,
-                            run.font.color.rgb if run.font.color else None,
+                            (
+                                run.font.color.rgb
+                                if run.font.color
+                                and run.font.color.rgb != TextColor.BLACK
+                                else None
+                            ),
                             run.bold,
                             run.underline,
                         )
@@ -53,17 +59,3 @@ class WordReader:
                 is_enter = False
             return_text_words.append(Sentence(text_words))
         return return_text_words
-
-
-"""
-doc = Document(
-    "C:\\Users\\cbs97\\AppData\\Local\\Programs\\Python\\Python311\\test.docx"
-)
-
-w = WordReader()
-result = w.convert(doc)
-# a = w.convert_to_string(result)
-for i in result:
-    print(i.text())
-# print("result :", result.text)
-print("=============================")"""

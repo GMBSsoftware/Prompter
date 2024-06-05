@@ -12,7 +12,6 @@ class CaptionCreator:
     def __init__(self) -> None:
         self.text_splitter = TextSplitter()
         self.file_name = ""
-        util = Util()
 
     def slice_text(self, text, text_type=None):
         return_Texts = []
@@ -79,20 +78,6 @@ class CaptionCreator:
                         line = re.sub(pattern, "", line)
             return_text += line.strip() + "\n"
         return return_text.strip()
-
-    def split_text_half(self, text):
-        return_text = []
-        # 공백을 기준으로 텍스트를 분할
-        words = text.split()
-
-        # 분할된 텍스트의 길이를 확인하여 절반 지점 계산
-        half_length = len(words) // 2
-
-        # 분할된 텍스트를 절반으로 자르기. 각 단어 공백 유지.
-        return_text.append(" ".join(words[:half_length]))
-        return_text.append(" ".join(words[half_length:]))
-
-        return return_text
 
     def create_caption(self, texts):
         a = Util.repeat(

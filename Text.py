@@ -1,15 +1,16 @@
 from Setting import TextColor
 from Setting import TextType
 from Setting import PPT_WORD
+from Setting import PPT_SONG
 from collections.abc import Iterable
 
 
 class Text:
     def __init__(self, text):
         self.text = text
-        self.color = TextColor.BLACK
+        self.color = PPT_SONG.default_color
 
-    def set_text(self, text, text_color=TextColor.BLACK):
+    def set_text(self, text, text_color=PPT_SONG.default_color):
         self.text = text
         self.color = text_color
 
@@ -54,15 +55,10 @@ class TextSong(Text):
 
 # 단어
 class Word(Text):
-    def __init__(
-        self, text, font, color=PPT_WORD.default_color, bold=None, underline=None
-    ):
+    def __init__(self, text, font, color=None, bold=None, underline=None):
         self.text = text
         self.font = font
-        if color == None:
-            self.color = PPT_WORD.default_color
-        else:
-            self.color = color
+        self.color = color
         self.bold = bold
         self.underline = underline
 

@@ -154,10 +154,6 @@ class TextSplitter:
                             formatted_lines.append(current_line[:i].rstrip())
                             current_line = current_line[i + 1 :] + word + " "
                             break
-                    """
-                    formatted_lines.append(current_line.rstrip())
-                    current_line = word + " "
-                    """
             formatted_lines.append(current_line.rstrip())
         return "\n".join(formatted_lines)
 

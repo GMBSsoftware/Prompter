@@ -81,8 +81,8 @@ class PPT_WORD:
     font = "옥션고딕 B"
     size = 50
     max_byte_in_one_line = getattr(TextLengthInOneLine, f"SIZE{size}").value
-    back_color = TextColor.WHITE
-    default_color = TextColor.BLACK
+    back_color = None
+    default_color = None
 
 
 class Caption:
@@ -142,7 +142,3 @@ class Symbol:
         "⑭",
         "⑮",
     ]
-    # 기호도 새 슬라이드로 넘어갈 기호랑 다음 줄로 넘어갈 기호 구별 필요
-    find_list = ['"', "'", "<", ">", ",", ".", "?", "!"]
-    symbol_sentence = r"(?<=[.,!?])\s*"
-    # 문장 끝에 오는 마침표, 느낌표랑 문장 앞에 올 괄호, 따옴표 구별 필요

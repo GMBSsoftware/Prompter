@@ -4,32 +4,42 @@ from Setting import Pattern
 from Setting import PPT_WORD
 from Setting import Symbol
 from Text import Sentence, Word, Paragraph
-from Default import Default
+from Default import Default, JHI, JJS, HMH, LWD
+from Default import JHI
 import re, os
 from pptx.util import Pt
 from pptx.dml.color import RGBColor
-
 from docx import Document
-from pptx.slide import Slide
 
 
 class WordPrompterCreator:
-    def __init__(self) -> None:
+    def __init__(self, person) -> None:
         self.titles = []
         self.max_line = PPT_WORD.max_line
         # 설정 해야함.
         self.max_byte = PPT_WORD.max_byte_in_one_line
         self.slides = []
-        self.person = Default()
         self.word_reader = WordReader()
+        self.start_index = None
+        self.file_name = None
+        if person == "JHI":
+            self.person = JHI()
+        elif person == "JJS":
+            self.person = JJS()
+        elif person == "HMH":
+            self.person = HMH()
+        elif person == "LWD":
+            self.person = LWD()
+        else:
+            self.person = Default()
 
     # 워드 문서 읽어와서 파일명, 제목 저장. 말씀 시작 부분 위치 저장. 기본 폰트 저장.
-    def process_first(self, text_words):
-        return_text_words = []
+    def process_first(self, texts):
+        return_texts = []
         is_before_bible = True
         bible_font = ""
         i = -1
-        for sentence in text_words:
+        for sentence in texts:
             i += 1
             # "본문" 단어 나오기 이전
             if is_before_bible:
@@ -42,18 +52,18 @@ class WordPrompterCreator:
                     self.file_name = re.search(
                         Pattern.file_name_word, sentence.text
                     ).group()
-                    return_text_words.append(sentence)
+                    return_texts.append(sentence)
                 # 공백이 아닌 경우에만 주제에 추가
                 elif not sentence.text == "":
                     self.titles.append(sentence.text)
-                    return_text_words.append(sentence)
+                    return_texts.append(sentence)
                 # 공백이면
                 else:
-                    return_text_words.append(sentence)
+                    return_texts.append(sentence)
             else:
                 # 공백일 때 건너뛰기
                 if sentence.text == "":
-                    return_text_words.append(sentence)
+                    return_texts.append(sentence)
                 # 성경 구절 정규식일 때
                 elif bool(re.search(Pattern.bible, sentence.text)):
                     bible_font = sentence[0].font
@@ -66,48 +76,41 @@ class WordPrompterCreator:
                     self.word_font = sentence[0].font
                     # 말씀 부분일 때 바로 아래줄에서 append 해주니까 +1
                     self.start_index = i + 1
-                    return_text_words.append(sentence)
+                    return_texts.append(sentence)
                     break
-        return_text_words.extend(text_words[self.start_index :])
-        return return_text_words
+        return_texts.extend(texts[self.start_index :])
+        return return_texts
 
-    """def make_prompter(self, file_name):
-        doc = WordReader.openfile(file_name)
-        self.ppt = PPTCreator()
+    def process_person(self, texts, person):
+        return_texts = []
         is_vedio = False
-        is_start = False
+        is_caption = False
+        is_bible = False
+        for sentence in texts:
+            # 끝 표시
+            if bool(re.search(Pattern.end, sentence.text)):
+                if is_vedio:
+                    is_vedio = False
+                    # 사람마다 다르게. 제거하는 경우 return none 남기는 경우 텍스트 그대로 반환
+                    result = person.process_end_vedio(sentence)
+                    if result is None:
+                        continue
+                elif is_caption:
+                    is_caption = False
+                elif is_bible:
+                    is_bible = False
 
-        slide = self.ppt.add_new_slide()
-
-        self.process_first(doc)
-
-        for paragraph in doc.paragraphs[self.start_index :]:
-            text = paragraph.text
-
-            if bool(re.search(Pattern.end, text)):
-                is_vedio = False
-                # 정규식을 그냥 끝으로 퉁쳐도 되나?
+            # 영상 내용인 경우 결과에 추가 x = 제거
             if is_vedio:
                 continue
-            elif any(word in text for word in Word.word):
-                self.slides.append(slide)
-                slide = self.ppt.add_new_slide()
-                self.join_text(slide, text)
-            elif bool(re.search(Pattern.vedio, text)):
-                is_vedio = True
-                continue
-            elif bool(re.search(Pattern.caption, text)):
-                # 자막은 다르게 처리해야함. 어렵네..
-                pass
-            elif bool(re.search(Pattern.bible, text)):
-                # 성경구절
-                pass
-            # 설정한 최대 줄 수 넘어가면 다음 슬라이드에 만들어야함.
-
-            elif text == "":
-                self.ppt.enter(slide)
+            # 영상 표시
+            if bool(re.search(Pattern.vedio, sentence.text)):
+                # 사람마다 is_vedio 다르게
+                is_vedio = person.process_vedio(sentence)
+                return_texts.append(sentence)
             else:
-                pass"""
+                return_texts.append(sentence)
+        return return_texts
 
     # 그냥 워드 파일 그대로 ppt 파일로 생성
     def prompter_default(self):
@@ -119,7 +122,28 @@ class WordPrompterCreator:
         slide = self.ppt.add_new_slide()
         text_words = self.word_reader.convert(doc)
 
+        text_words1 = self.process_first(text_words)
+
+        text_words2 = self.process_person(text_words1, self.person)
+
+        print("t1 : ", len(text_words1))
+        print("t2 : ", len(text_words2))
+
+        for paragraph in text_words:
+            slide = self.max_process(paragraph, slide)
+
+        desktop_directory = os.path.join(os.path.expanduser("~"), "Desktop")
+        self.ppt.prs.save(f"{desktop_directory}/{self.file_name}.pptx")
+
+    def prompter_make(self, file):
+        doc = Document(file)
+        self.ppt = PPTCreator(PPT_WORD.back_color)
+
+        slide = self.ppt.add_new_slide()
+        text_words = self.word_reader.convert(doc)
+
         text_words = self.process_first(text_words)
+        text_words = self.process_person(text_words, self.person)
 
         for paragraph in text_words:
             slide = self.max_process(paragraph, slide)
@@ -136,55 +160,6 @@ class WordPrompterCreator:
         ):
             text = text.text
         return len(text.encode("utf-8"))
-
-    def comma_new_line(self, texts):
-        return_texts = []
-        line = ""
-        for text in texts:
-            line += text + " "
-            if "," in text:
-                return_texts.append(line)
-                line = ""
-        return_texts.append(line)
-        return return_texts
-
-    def split_quotation_marks(self, texts):
-        return_texts = []
-        for text in texts:
-            if "‘" in text:
-                # 따옴표 앞에 단어가 붙음
-                if text[0] != "‘":
-                    return_texts.append(text[: text.find("‘")])
-                    return_texts.append(text[text.find("‘") :])
-                    continue
-            if "’" in text:
-                # 따옴표 뒤에 단어가 붙음
-                if text[-1] != "’":
-                    # 따옴표도 포함해야해서 +1
-                    return_texts.append(text[: text.find("’") + 1])
-                    return_texts.append(text[text.find("’") + 1 :])
-                    continue
-            return_texts.append(text)
-        return return_texts
-
-    def split_double_quotation_marks(self, texts):
-        return_texts = []
-        for text in texts:
-            if "“" in text:
-                # 따옴표 앞에 단어가 붙음
-                if text[0] != "“":
-                    return_texts.append(text[: text.find("“")])
-                    return_texts.append(text[text.find("“") :])
-                    continue
-            if "”" in text:
-                # 따옴표 뒤에 단어가 붙음
-                if text[-1] != "”":
-                    # 따옴표도 포함해야해서 +1
-                    return_texts.append(text[: text.find("”") + 1])
-                    return_texts.append(text[text.find("”") + 1 :])
-                    continue
-            return_texts.append(text)
-        return return_texts
 
     # 절반으로 분리.
     def split_text_half(self, texts):
@@ -370,24 +345,6 @@ class WordPrompterCreator:
                     return_paragraph.add_sentence(i)
         return return_paragraph
 
-    # 나눠진 텍스트들의 길이가 2배 이상 차이나는지 비교
-    def check_length_over_twice(self, texts):
-        # 배열 길이가 1 이하인 경우는 비교할 텍스트가 없으므로 2배 넘은걸로 가정.
-        if len(texts) <= 1:
-            return True
-        # 비교할 값
-        reference_text = texts[0]
-        # 텍스트 배열을 순회하며 항목의 길이 차이 비교.
-        for text in texts[1:]:
-            reference_length = self.length(reference_text)
-            if abs(self.length(text) - reference_length) >= min(
-                self.length(text), reference_length
-            ):
-                return True
-            reference_text = text
-        # 모든 항목을 순회한 후에도 차이가 2배 이상인 경우가 없으면 False를 반환합니다.
-        return False
-
     # ppt에 텍스트 쓰기
     def write_on_slide(self, slide, paragraph):
         title_shape = slide.shapes.title
@@ -410,11 +367,11 @@ class WordPrompterCreator:
     def add_text(self, ppt_paragraph, word):
         slide_run = ppt_paragraph.add_run()
         slide_run.text = word.text + " "
-        slide_run.font.name = self.person.font
-        slide_run.font.size = Pt(self.person.size)
+        slide_run.font.name = PPT_WORD.font
+        slide_run.font.size = Pt(PPT_WORD.size)
         # 색상 없으면 기본 색상
         if word.color is None:
-            slide_run.font.color.rgb = self.person.default_color
+            slide_run.font.color.rgb = PPT_WORD.default_color
         # 색상 있으면 그 색상 그대로
         else:
             # 워드에서 받은 객체랑 ppt에 쓸 객체가 서로 달라서 직접 변환 시켜줘야됨
@@ -433,5 +390,5 @@ class WordPrompterCreator:
             slide_run.font.underline = True
 
 
-w = WordPrompterCreator()
-w.prompter_default()
+# w = WordPrompterCreator()
+# w.prompter_default()
