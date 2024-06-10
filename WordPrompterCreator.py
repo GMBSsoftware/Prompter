@@ -137,7 +137,7 @@ class WordPrompterCreator:
 
     def prompter_make(self, file):
         doc = Document(file)
-        self.ppt = PPTCreator(PPT_WORD.back_color)
+        self.ppt = PPTCreator(PPT_WORD.back_color, "sample.pptx")
 
         slide = self.ppt.add_new_slide()
         text_words = self.word_reader.convert(doc)

@@ -46,18 +46,7 @@ class Default:
 
 class JHI(Default):
     def __init__(self) -> None:
-        # 글자 색 설정
-        PPT_WORD.default_color = TextColor.WHITE
-        PPT_WORD.back_color = TextColor.BLACK
-        # 폰트 설정
-        PPT_WORD.font = "옥션고딕 B"
-        # 글자 크기 설정
-        PPT_WORD.size = 48
-        # 줄 당 최대 글자 수 설정
-        PPT_WORD.max_byte_in_one_line = getattr(
-            TextLengthInOneLine, f"SIZE{PPT_WORD.size}"
-        ).value
-        PPT_WORD.max_line = 6
+        super().__init__()
 
 
 class JJS(Default):

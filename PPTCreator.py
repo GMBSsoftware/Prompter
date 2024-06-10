@@ -11,10 +11,11 @@ import re
 
 
 class PPTCreator:
-    def __init__(self, back_color) -> None:
-        self.prs = Presentation()
-        self.set_slide_layout()
-        self.set_slide_back_color(back_color)
+    def __init__(self, back_color, sample_file_name=None) -> None:
+        self.prs = Presentation(sample_file_name)
+        if sample_file_name is not None:
+            self.set_slide_layout()
+            self.set_slide_back_color(back_color)
 
     def generate_PPT(self, file_name):
         # 프레젠테이션 파일 저장
