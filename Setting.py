@@ -1,8 +1,10 @@
 from enum import Enum, auto
 from pptx.dml.color import RGBColor
 
-# pyinstaller --onefile --add-data "C:\Users\cbs97\AppData\Local\Programs\Python\Python311\Lib\site-packages\pptx\templates;pptx\templates" main.py
+# pyinstaller --onefile --add-data "C:\Users\cbs97\AppData\Local\Programs\Python\Python311\Lib\site-packages\pptx\templates;pptx\templates" --add data "C:\Users\cbs97\AppData\Local\Programs\Python\Python311\sample.ppt;ppt_files" main.py
 # pyinstaller --onefile --add-data "C:\Users\user\AppData\Local\Programs\Python\Python312\Lib\site-packages\pptx\templates;pptx\templates" main.py
+# pyinstaller --onefile --add-data "C:\Users\cbs97\AppData\Local\Programs\Python\Python311\Lib\site-packages\pptx\templates;pptx\templates" --add-data "C:\Users\cbs97\AppData\Local\Programs\Python\Python311\sample.pptx;ppt_files" main.py
+# pyinstaller -F -w --add-data "C:\Users\cbs97\AppData\Local\Programs\Python\Python311\Lib\site-packages\pptx\templates;pptx\templates" --add-data "C:\Users\cbs97\Documents\GitHub\Prompter\sample.pptx;." main.py
 
 
 class TextType(Enum):
