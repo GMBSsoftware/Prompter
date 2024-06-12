@@ -6,7 +6,7 @@ from Setting import Symbol
 from Text import Sentence, Word, Paragraph
 from Default import Default, JHI, JJS, HMH, LWD
 from Default import JHI
-import re, os
+import re, os, sys
 from pptx.util import Pt
 from pptx.dml.color import RGBColor
 from docx import Document
@@ -113,9 +113,18 @@ class WordPrompterCreator:
                 return_texts.append(sentence)
         return return_texts
 
+    def resource_path(self, relative_path):
+        """Get absolute path to resource, works for dev and for PyInstaller"""
+        try:
+            # PyInstaller creates a temp folder and stores path in _MEIPASS
+            base_path = sys._MEIPASS
+        except AttributeError:
+            base_path = os.path.abspath(".")
+        return os.path.join(base_path, relative_path)
+
     def make_prompter(self, file):
         doc = Document(file)
-        self.ppt = PPTCreator(PPT_WORD.back_color, "sample.pptx")
+        self.ppt = PPTCreator(PPT_WORD.back_color, self.resource_path("sample.pptx"))
 
         slide = self.ppt.add_new_slide()
         text_words = self.word_reader.convert(doc)
