@@ -31,7 +31,7 @@ def handle_caption_song(text_content):
 
 def handle_prompter_word(file_content, person):
     word_prompter_creator = WordPrompterCreator(person)
-    word_prompter_creator.prompter_make(file_content)
+    word_prompter_creator.make_prompter(file_content)
     messagebox.showinfo(
         "알림", "설교 프롬프터(ppt파일)를 생성했습니다.\n생성위치 : 바탕화면"
     )

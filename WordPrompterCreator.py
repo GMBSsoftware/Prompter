@@ -22,6 +22,7 @@ class WordPrompterCreator:
         self.word_reader = WordReader()
         self.start_index = None
         self.file_name = None
+        self.is_new_slide = False
         if person == "JHI":
             self.person = JHI()
         elif person == "JJS":
@@ -112,30 +113,7 @@ class WordPrompterCreator:
                 return_texts.append(sentence)
         return return_texts
 
-    # 그냥 워드 파일 그대로 ppt 파일로 생성
-    def prompter_default(self):
-        doc = Document(
-            "C:\\Users\\cbs97\\AppData\\Local\\Programs\\Python\\Python311\\test.docx"
-            # r"C:\Users\user\AppData\Local\Programs\Python\Python312\test.docx"
-        )
-        self.ppt = PPTCreator(PPT_WORD.back_color)
-        slide = self.ppt.add_new_slide()
-        text_words = self.word_reader.convert(doc)
-
-        text_words1 = self.process_first(text_words)
-
-        text_words2 = self.process_person(text_words1, self.person)
-
-        print("t1 : ", len(text_words1))
-        print("t2 : ", len(text_words2))
-
-        for paragraph in text_words:
-            slide = self.max_process(paragraph, slide)
-
-        desktop_directory = os.path.join(os.path.expanduser("~"), "Desktop")
-        self.ppt.prs.save(f"{desktop_directory}/{self.file_name}.pptx")
-
-    def prompter_make(self, file):
+    def make_prompter(self, file):
         doc = Document(file)
         self.ppt = PPTCreator(PPT_WORD.back_color, "sample.pptx")
 
@@ -242,7 +220,6 @@ class WordPrompterCreator:
 
     # 최대 글자, 최대 줄 수 넘는지 체크해서 넘으면 나누는 프로세스
     def max_process(self, paragraph, slide):
-
         # 최대 글자 초과시 분리, 재조합 프로세스 실행
         if self.check_over_length(paragraph.text, self.max_byte):
             # 컴마로 나눌 때 이상적으로 잘 나눠져서 길이 안 넘으면
@@ -261,13 +238,18 @@ class WordPrompterCreator:
         elif isinstance(paragraph, Paragraph):
             check_symbol_text = paragraph[0].text
 
-        # 중요 기호 있고, 빈 슬라이드가 아니면 새 슬라이드에서 시작.
-        if (
+        # 이미 새 슬라이드면
+        if self.is_new_slide:
+            self.is_new_slide = False
+            pass
+        # 중요 기호 있거나 빈 슬라이드면 새 슬라이드에서 시작.
+        elif (
             any(symbol in check_symbol_text for symbol in Symbol.symbol_important)
-            and not slide.shapes.title.text == "\n"
+            or check_symbol_text == ""
         ):
             self.slides.append(slide)
             slide = self.ppt.add_new_slide()
+            self.is_new_slide = True
 
         if self.check_over_line(paragraph):
             paragraphs = self.split_over_line(paragraph, self.max_line)

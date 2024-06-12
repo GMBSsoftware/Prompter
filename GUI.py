@@ -5,6 +5,7 @@ from tkinter import messagebox
 
 class GUI:
     def __init__(self, root) -> None:
+        self.version = "Ver3.1"
         self.root = root
         # 생성할 프로그램 가로 세로 크기
         self.app_width = 400
@@ -38,7 +39,9 @@ class GUI:
 
         # 하단 라벨
         label = tk.Label(
-            self.root, text="Ver3.0    Made by\n광명방송국 개발팀", justify="right"
+            self.root,
+            text=f"{self.version}    Made by\n광명방송국 개발팀",
+            justify="right",
         )
         # label.pack(side="bottom", anchor="se")  # 하단에 정렬
         label.place(x=self.app_width - 120, y=self.app_height - 50)
