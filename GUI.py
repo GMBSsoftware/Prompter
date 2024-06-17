@@ -258,10 +258,3 @@ class GUI:
     def show(self):
         self.frame_base()
         self.frame_home()
-
-
-"""root = tk.Tk()
-gui = GUI(root)
-gui.show()
-gui.root.mainloop()
-"""

@@ -135,6 +135,8 @@ class WordPrompterCreator:
         for paragraph in text_words:
             slide = self.max_process(paragraph, slide)
 
+        self.reLine()
+
         desktop_directory = os.path.join(os.path.expanduser("~"), "Desktop")
         self.ppt.prs.save(f"{desktop_directory}/{self.file_name}.pptx")
 
@@ -260,13 +262,13 @@ class WordPrompterCreator:
             slide = self.ppt.add_new_slide()
             self.is_new_slide = True
 
-        if self.check_over_line(paragraph):
+        """if self.check_over_line(paragraph):
             paragraphs = self.split_over_line(paragraph, self.max_line)
             for i in paragraphs:
                 self.slides.append(slide)
                 slide = self.ppt.add_new_slide()
                 self.write_on_slide(slide, i)
-            return slide
+            return slide"""
 
         # 기존 슬라이드 줄 수 + 현재 텍스트의 줄수가 최대 줄 수 초과
         if self.check_over_line(paragraph, slide):
@@ -380,6 +382,7 @@ class WordPrompterCreator:
         if not word.underline is None:
             slide_run.font.underline = True
 
-
-# w = WordPrompterCreator()
-# w.prompter_default()
+    def reLine(self):
+        for slide in self.slides:
+            print(slide.shapes.title.text)
+            print("=================================")
