@@ -135,7 +135,7 @@ class WordPrompterCreator:
         for paragraph in text_words:
             slide = self.max_process(paragraph, slide)
 
-        self.reLine()
+        # self.reLine()
 
         desktop_directory = os.path.join(os.path.expanduser("~"), "Desktop")
         self.ppt.prs.save(f"{desktop_directory}/{self.file_name}.pptx")
@@ -383,6 +383,24 @@ class WordPrompterCreator:
             slide_run.font.underline = True
 
     def reLine(self):
-        for slide in self.slides:
-            print(slide.shapes.title.text)
+        for i in range(len(self.slides)):
+            print(self.slides[i].shapes.title.text)
+            lines_num = self.count_lines(self.slides[i].shapes.title.text)
+            print("줄 수 : ", lines_num)
             print("=================================")
+            if lines_num == 1 and i > 0:
+                tmp = self.slides[i - 1].shapes.title.text
+                self.slides[i - 1].shapes.title.text = self.slides[i].shapes.title.text
+                self.slides[i].shapes.title.text = tmp
+
+    # 맨 위, 맨 아래 공백 제외 글자 줄 수
+    def count_lines(self, text):
+        # 텍스트를 줄 단위로 분리
+        lines = text.splitlines()
+        # 맨 앞과 맨 뒤의 공백 줄 제거
+        while lines and lines[0].strip() == "":
+            lines.pop(0)
+        while lines and lines[-1].strip() == "":
+            lines.pop(-1)
+        # 남은 줄의 개수를 반환
+        return len(lines)
