@@ -13,7 +13,7 @@ def handle_prompter_song(text_content):
     splitted_texts = text_splitter.split_text(text_content)
     classified_texts = text_classifier.classify_text(splitted_texts)
     texts = text_splitter.split_long_texts(classified_texts)
-    ppt = PPTCreator(PPT_SONG.back_color)
+    ppt = PPTCreator(PPT_SONG.back_color, "sample_song.pptx")
     ppt.create_slide(texts)
     messagebox.showinfo(
         "알림", "찬양 프롬프터(ppt파일)를 생성했습니다.\n생성위치 : 바탕화면"

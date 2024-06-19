@@ -163,15 +163,15 @@ class PPTCreator:
 
             # 마지막 프리뷰 빨간 글자. for문 범위가 -1 이전이니 -2가 마지막
             if i == len(slides) - 2:
-                self.join_text_end(slides[i], previews[i + 1])
+                self.join_text_end(slides[i], previews[i + 2])
                 return
 
-            self.join_text(slides[i], previews[i + 1])
+            self.join_text(slides[i], previews[i + 2])
 
             # 멘트 없는 경우에  프리뷰로만 표시하고 다음 슬라이드에는 필요 없음.
-            if "x" in previews[i + 1]:
-                slides[i + 1].shapes.title.text_frame.paragraphs[0].text = ""
-                slides[i + 1].shapes.title.text_frame.paragraphs[0].font.size = Pt(1)
+            if "x" in previews[i + 2]:
+                slides[i + 2].shapes.title.text_frame.paragraphs[0].text = ""
+                slides[i + 2].shapes.title.text_frame.paragraphs[0].font.size = Pt(1)
 
     def slide_end(self, slide):
         title_shape = slide.shapes.title
