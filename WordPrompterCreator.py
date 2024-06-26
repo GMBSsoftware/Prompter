@@ -16,11 +16,11 @@ class WordPrompterCreator:
     def __init__(self, person) -> None:
         self.titles = []
         self.max_line = PPT_WORD.max_line
-        # 설정 해야함.
         self.max_byte = PPT_WORD.max_byte_in_one_line
         self.slides = []
+        self.texts = []
+        self.text = None
         self.word_reader = WordReader()
-        self.start_index = None
         self.file_name = None
         self.is_new_slide = False
         if person == "JHI":
@@ -34,8 +34,8 @@ class WordPrompterCreator:
         else:
             self.person = Default()
 
-    # 워드 문서 읽어와서 파일명, 제목 저장. 말씀 시작 부분 위치 저장. 기본 폰트 저장.
     def process_first(self, texts):
+        """워드 문서 읽어와서 파일명, 제목 저장. 말씀 시작 부분 위치 저장. 기본 폰트 저장."""
         return_texts = []
         is_before_bible = True
         bible_font = ""
@@ -45,28 +45,28 @@ class WordPrompterCreator:
             # "본문" 단어 나오기 이전
             if is_before_bible:
                 # "본문"
-                if bool(re.search(Pattern.bible_guide, sentence.text)):
+                if bool(re.search(Pattern.bible_guide, str(sentence))):
                     is_before_bible = False
                     continue
                 # o 월 o 일 oo 말씀
-                if bool(re.search(Pattern.file_name_word, sentence.text)):
+                if bool(re.search(Pattern.file_name_word, str(sentence))):
                     self.file_name = re.search(
-                        Pattern.file_name_word, sentence.text
+                        Pattern.file_name_word, str(sentence)
                     ).group()
                     return_texts.append(sentence)
                 # 공백이 아닌 경우에만 주제에 추가
-                elif not sentence.text == "":
-                    self.titles.append(sentence.text)
+                elif not str(sentence) == "":
+                    self.titles.append(str(sentence))
                     return_texts.append(sentence)
                 # 공백이면
                 else:
                     return_texts.append(sentence)
             else:
                 # 공백일 때 건너뛰기
-                if sentence.text == "":
+                if str(sentence) == "":
                     return_texts.append(sentence)
                 # 성경 구절 정규식일 때
-                elif bool(re.search(Pattern.bible, sentence.text)):
+                elif bool(re.search(Pattern.bible, str(sentence))):
                     bible_font = sentence[0].font
                     continue
                 # 성경 구절 문단을 나눠썼을 때는 폰트로 구별.
@@ -76,10 +76,10 @@ class WordPrompterCreator:
                 else:
                     self.word_font = sentence[0].font
                     # 말씀 부분일 때 바로 아래줄에서 append 해주니까 +1
-                    self.start_index = i + 1
+                    start_index = i + 1
                     return_texts.append(sentence)
                     break
-        return_texts.extend(texts[self.start_index :])
+        return_texts.extend(texts[start_index :])
         return return_texts
 
     def process_person(self, texts, person):
@@ -89,7 +89,7 @@ class WordPrompterCreator:
         is_bible = False
         for sentence in texts:
             # 끝 표시
-            if bool(re.search(Pattern.end, sentence.text)):
+            if bool(re.search(Pattern.end, str(sentence))):
                 if is_vedio:
                     is_vedio = False
                     # 사람마다 다르게. 제거하는 경우 return none 남기는 경우 텍스트 그대로 반환
@@ -105,7 +105,7 @@ class WordPrompterCreator:
             if is_vedio:
                 continue
             # 영상 표시
-            if bool(re.search(Pattern.vedio, sentence.text)):
+            if bool(re.search(Pattern.vedio, str(sentence))):
                 # 사람마다 is_vedio 다르게
                 is_vedio = person.process_vedio(sentence)
                 return_texts.append(sentence)
@@ -131,9 +131,10 @@ class WordPrompterCreator:
         slide = self.ppt.add_new_slide()
         text_words = self.word_reader.convert(doc)
 
-        text_words = self.process_first(text_words)
-        text_words = self.process_person(text_words, self.person)
+        texts = self.process_first(text_words)
+        texts = self.process_person(texts, self.person)
 
+        texts=self.process_line(texts)
         for paragraph in text_words:
             slide = self.max_process(paragraph, slide)
 
@@ -149,7 +150,7 @@ class WordPrompterCreator:
             or isinstance(text, Word)
             or isinstance(text, Paragraph)
         ):
-            text = text.text
+            text = str(text)
         return len(text.encode("utf-8"))
 
     # 절반으로 분리.
@@ -189,11 +190,11 @@ class WordPrompterCreator:
         if slide:
             for paragraph in slide.shapes.title.text_frame.paragraphs:
                 # 공백이면 문단 나눠진 거니 \n 추가
-                if paragraph.text == "":
+                if str(paragraph) == "":
                     slide_text += "\n"
                 # 글자 있으면 추가
                 else:
-                    slide_text += paragraph.text + "\n"
+                    slide_text += str(paragraph) + "\n"
             slide_line = slide_text.strip().count("\n") + 1
         else:
             slide_line = 0
@@ -201,7 +202,7 @@ class WordPrompterCreator:
         text_line = 0
 
         if isinstance(text, Paragraph):
-            if text.text == "":
+            if str(text) == "":
                 text_line = 0
             else:
                 text_line = len(text.sentences)
@@ -231,13 +232,17 @@ class WordPrompterCreator:
                 start = end
             return paragraphs
 
+    def process_line(self,texts):
+        """한 줄 넘는 문장 분리"""
+        if self.check_over_length
+
     # 최대 글자, 최대 줄 수 넘는지 체크해서 넘으면 나누는 프로세스
     def max_process(self, paragraph, slide):
         # 최대 글자 초과시 분리, 재조합 프로세스 실행
-        if self.check_over_length(paragraph.text, self.max_byte):
+        if self.check_over_length(str(paragraph), self.max_byte):
             # 컴마로 나눌 때 이상적으로 잘 나눠져서 길이 안 넘으면
             if not self.check_over_length(
-                self.join_comma_ideal(paragraph.text, self.max_byte),
+                self.join_comma_ideal(str(paragraph), self.max_byte),
                 self.max_byte,
             ):
                 paragraph = self.join_comma_ideal(paragraph, self.max_byte)
@@ -245,24 +250,14 @@ class WordPrompterCreator:
                 # 그냥 길이 맞춰서 이어붙이는 메서드
                 paragraph = self.join(paragraph, self.max_byte)
 
-        # 중요 기호들은 새 슬라이드에서 시작.
-        if isinstance(paragraph, Sentence):
-            check_symbol_text = paragraph.text
-        elif isinstance(paragraph, Paragraph):
-            check_symbol_text = paragraph[0].text
-
-        # 이미 새 슬라이드면
-        if self.is_new_slide:
-            self.is_new_slide = False
-            pass
-        # 중요 기호 있거나 빈 슬라이드면 새 슬라이드에서 시작.
-        elif (
-            any(symbol in check_symbol_text for symbol in Symbol.symbol_important)
-            or check_symbol_text == ""
-        ):
-            self.slides.append(slide)
-            slide = self.ppt.add_new_slide()
-            self.is_new_slide = True
+        if self.check_new_slide(paragraph):
+            self.texts.append(self.text)
+            if isinstance(paragraph, Sentence):
+                self.text = paragraph
+            elif isinstance(paragraph, Paragraph):
+                self.text = paragraph[0]
+        else:
+            self.text = paragraph
 
         """if self.check_over_line(paragraph):
             paragraphs = self.split_over_line(paragraph, self.max_line)
@@ -285,11 +280,32 @@ class WordPrompterCreator:
             self.write_on_slide(slide, paragraph)
             return slide
 
+    def check_new_slide(self, text):
+        if isinstance(text, Sentence):
+            check_symbol_text = str(text)
+        elif isinstance(text, Paragraph):
+            check_symbol_text = str(text[0])
+
+        # 중요 기호들은 새 슬라이드에서 시작.
+        # 이미 새 슬라이드면
+        if self.is_new_slide:
+            self.is_new_slide = False
+            return False
+        # 중요 기호 있거나 빈 슬라이드면 새 슬라이드에서 시작.
+        elif (
+            any(symbol in check_symbol_text for symbol in Symbol.symbol_important)
+            or check_symbol_text == ""
+        ):
+            self.is_new_slide = True
+            return True
+        else:
+            return False
+
     # 컴마를 기준으로 나눴을 때 이상적으로 나눠지면 나눠서 반환, 아니면 그대로 반환하는 메서드
     def join_comma_ideal(self, text, max_byte):
         comma_index = -1
         if isinstance(text, Sentence):
-            text = text.text
+            text = str(text)
         text = str(text)
         while True:
             # 현재 콤마의 인덱스를 찾습니다.

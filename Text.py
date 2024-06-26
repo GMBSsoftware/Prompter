@@ -55,7 +55,7 @@ class TextSong(Text):
 
 # 단어
 class Word(Text):
-    def __init__(self, text, font, color=None, bold=None, underline=None):
+    def __init__(self, text, font=PPT_WORD.font, color=None, bold=None, underline=None):
         self.text = text
         self.font = font
         self.color = color
@@ -80,13 +80,14 @@ class Word(Text):
 # 문장
 class Sentence:
     def __init__(self, words=None):
-        if words:
+        if isinstance(words, list):
             self.words = words
-        else:
+        elif words is None:
             self.words = []
+        else:
+            raise TypeError("Can't create Sentence")
 
-    @property
-    def text(self):
+    def __str__(self):
         return " ".join(str(word) for word in self.words)
 
     def __iter__(self):
@@ -101,6 +102,19 @@ class Sentence:
     def __getitem__(self, index):
         return self.words[index]
 
+    def __add__(self, other):
+        print("other.type : ", type(other))
+        print("other : ", other)
+        if isinstance(other, str):
+            word = Word(other)
+            return Sentence(self.words.append(word))
+        elif isinstance(other, Word):
+            return Sentence(self.words.append(other))
+        elif isinstance(other, Sentence):
+            return_paragraph = Paragraph(self)
+            return_paragraph.add_sentence(other)
+            return return_paragraph
+
 
 # 문단
 class Paragraph:
@@ -110,8 +124,7 @@ class Paragraph:
         else:
             self.sentences = []
 
-    @property
-    def text(self):
+    def __str__(self):
         return "\n".join(str(sentence) for sentence in self.sentences)
 
     def __iter__(self):
