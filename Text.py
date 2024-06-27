@@ -70,6 +70,13 @@ class Word(Text):
     def font(self, font):
         self._font = font
 
+    def __add__(self, other):
+        if isinstance(other, str):
+            return_sentence = Sentence()
+            return_sentence.add_word(self)
+            return_sentence.add_word(Word(str))
+            return return_sentence
+
     def __str__(self):
         return super().__str__()
 

@@ -39,6 +39,7 @@ class WordPrompterCreator:
         return_texts = []
         is_before_bible = True
         bible_font = ""
+        start_index = 0
         i = -1
         for sentence in texts:
             i += 1
@@ -79,7 +80,7 @@ class WordPrompterCreator:
                     start_index = i + 1
                     return_texts.append(sentence)
                     break
-        return_texts.extend(texts[start_index :])
+        return_texts.extend(texts[start_index:])
         return return_texts
 
     def process_person(self, texts, person):
@@ -134,7 +135,7 @@ class WordPrompterCreator:
         texts = self.process_first(text_words)
         texts = self.process_person(texts, self.person)
 
-        texts=self.process_line(texts)
+        texts = self.process_line(texts)
         for paragraph in text_words:
             slide = self.max_process(paragraph, slide)
 
@@ -153,12 +154,13 @@ class WordPrompterCreator:
             text = str(text)
         return len(text.encode("utf-8"))
 
-    # 절반으로 분리.
-    def split_text_half(self, texts):
+    def resize_text(self, text_last, text_first):
+        """길이 다른 2 텍스트 입력 받아서 합친 후 절반 잘라서 리턴 (길이 맞춰서 리턴)"""
         words = []
-        for sentence in texts:
-            for word in sentence:
-                words.append(word)
+        for word in text_first:
+            words.append(word)
+        for word in text_last:
+            words.append(word)
         half_length = len(words) // 2
         sentences = []
         sentences.append(Sentence(words[:half_length]))
@@ -232,9 +234,25 @@ class WordPrompterCreator:
                 start = end
             return paragraphs
 
-    def process_line(self,texts):
+    def process_line(self, texts):
         """한 줄 넘는 문장 분리"""
-        if self.check_over_length
+        return_texts = []
+        for text in texts:
+            if self.check_over_length(str(text), self.max_byte):
+                # 한 줄 초과 시
+                if not self.check_over_length(
+                    self.join_comma_ideal(str(text), self.max_byte), self.max_byte
+                ):
+                    # 컴마로 나눴을 때 이상적으로 나뉘면
+                    return_texts.extend(self.join_comma_ideal(text, self.max_byte))
+                else:
+                    return_texts.extend(self.join(text, self.max_byte))
+            else:
+                return_texts.append(text)
+        return return_texts
+
+    def process_slide(self, texts):
+        """최대 줄 수 넘으면 분리"""
 
     # 최대 글자, 최대 줄 수 넘는지 체크해서 넘으면 나누는 프로세스
     def max_process(self, paragraph, slide):
@@ -304,9 +322,7 @@ class WordPrompterCreator:
     # 컴마를 기준으로 나눴을 때 이상적으로 나눠지면 나눠서 반환, 아니면 그대로 반환하는 메서드
     def join_comma_ideal(self, text, max_byte):
         comma_index = -1
-        if isinstance(text, Sentence):
-            text = str(text)
-        text = str(text)
+        # text = str(text)
         while True:
             # 현재 콤마의 인덱스를 찾습니다.
             comma_index = text.find(",", comma_index + 1)
@@ -325,12 +341,35 @@ class WordPrompterCreator:
                 if abs(self.length(text1) - self.length(text2)) <= min(
                     self.length(text1), self.length(text2)
                 ):
-                    return Paragraph([text1.strip(), text2.strip()])
+                    return [Sentence(text1), Sentence(text2)]
 
         # 적절한 분할이 없으면 원래 텍스트를 반환합니다.
-        return text
+        return [Sentence(text)]
 
-    # max_byte 길이 찰 때까지 쭉 이어붙이는 메서드
+    def join(self, words, max_byte):
+        """max_byte 길이 찰 때까지 쭉 이어붙이는 메서드\n
+        들어오는 값은 Word 클래스"""
+        return_sentences = []
+        sentence = Sentence()
+        max_byte = self.max_byte
+        for word in words:
+            if (self.length(sentence) + self.length(word)) < max_byte:
+                # max_byte 이하일 때 쭉 이어붙이기
+                sentence.add_word(word)
+            else:
+                # max_byte 넘어가서 반환할 배열에 추가 후 다시 반복
+                return_sentences.append(sentence)
+                sentence = Sentence()
+                sentence.add_word(word)
+        return_sentences.append(sentence)
+        if len(return_sentences) > 1:
+            return_sentences.extend(
+                self.resize_text(return_sentences.pop(), return_sentences.pop())
+            )
+            # 마지막거 2개 가져와서 길이 맞추는거
+        return return_sentences
+
+    """# max_byte 길이 찰 때까지 쭉 이어붙이는 메서드
     def join(self, texts, max_byte):
         result = Sentence()
         return_paragraph = Paragraph()
@@ -354,7 +393,7 @@ class WordPrompterCreator:
             for i in splitted_text:
                 if isinstance(i, Sentence):
                     return_paragraph.add_sentence(i)
-        return return_paragraph
+        return return_paragraph"""
 
     # ppt에 텍스트 쓰기
     def write_on_slide(self, slide, paragraph):
