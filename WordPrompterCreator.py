@@ -241,7 +241,7 @@ class WordPrompterCreator:
             if self.check_over_length(str(text), self.max_byte):
                 # 한 줄 초과 시
                 if not self.check_over_length(
-                    self.join_comma_ideal(str(text), self.max_byte), self.max_byte
+                    self.join_comma_ideal(text, self.max_byte), self.max_byte
                 ):
                     # 컴마로 나눴을 때 이상적으로 나뉘면
                     return_texts.extend(self.join_comma_ideal(text, self.max_byte))
@@ -318,6 +318,17 @@ class WordPrompterCreator:
             return True
         else:
             return False
+
+    def join_comma_ideal(self, text, max_byte):
+        """컴마를 기준으로 나눴을 때 이상적으로 나눠지면 나눠서 반환, 아니면 그대로 반환"""
+        max_byte = self.max_byte
+        comma_index = -1
+        while True:
+            for i in range(len(text)):
+                if "," in text[i]:
+                    comma_index = i
+                text1 = text[: comma_index + 1]
+                text2 = text[comma_index + 1 :]
 
     # 컴마를 기준으로 나눴을 때 이상적으로 나눠지면 나눠서 반환, 아니면 그대로 반환하는 메서드
     def join_comma_ideal(self, text, max_byte):
