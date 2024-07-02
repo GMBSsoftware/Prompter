@@ -129,15 +129,20 @@ class WordPrompterCreator:
             PPT_WORD.back_color, self.resource_path("sample_word.pptx")
         )
 
-        slide = self.ppt.add_new_slide()
+        # slide = self.ppt.add_new_slide()
         text_words = self.word_reader.convert(doc)
 
         texts = self.process_first(text_words)
         texts = self.process_person(texts, self.person)
 
         texts = self.process_line(texts)
-        for paragraph in text_words:
-            slide = self.max_process(paragraph, slide)
+        texts_slides = self.process_slide(texts)
+        texts_slides_resized = self.resize_slide(texts_slides)
+        texts_removed = self.remove_one_line_slide(texts_slides_resized)
+        self.write_on_slide(texts_removed)
+
+        """for paragraph in text_words:
+            slide = self.max_process(paragraph, slide)"""
 
         # self.reLine()
 
@@ -152,7 +157,15 @@ class WordPrompterCreator:
             or isinstance(text, Paragraph)
         ):
             text = str(text)
-        return len(text.encode("utf-8"))
+            return len(text.encode("utf-8"))
+        elif isinstance(text, list):
+            return_value = 0
+            for i in text:
+                text = str(text)
+                return_value += len(text.encode("utf-8"))
+            return return_value
+        else:
+            return len(text.encode("utf-8"))
 
     def resize_text(self, text_last, text_first):
         """길이 다른 2 텍스트 입력 받아서 합친 후 절반 잘라서 리턴 (길이 맞춰서 리턴)"""
@@ -183,7 +196,7 @@ class WordPrompterCreator:
                 return True
         return False
 
-    # 현재 슬라이드의 줄 수와 입력할 텍스트의 줄 수를 합친 값이 최대 줄 수 초과하는지 체크
+    """# 현재 슬라이드의 줄 수와 입력할 텍스트의 줄 수를 합친 값이 최대 줄 수 초과하는지 체크
     def check_over_line(self, text, slide=None):
         # 현재 슬라이드에 있는 줄 수에 변수로 넘긴 text를 합쳤을 때 최대 줄 수 넘으면 true
         slide_text = ""
@@ -215,9 +228,9 @@ class WordPrompterCreator:
 
         if slide_line + text_line > self.max_line:
             return True
-        return False
+        return False"""
 
-    # 최대 줄 수 넘을 때 문단 나누는 메서드.
+    """# 최대 줄 수 넘을 때 문단 나누는 메서드.
     def split_over_line(self, paragraph, max_line):
         num_sentences = len(paragraph.sentences)
         if num_sentences <= max_line * 2:
@@ -232,7 +245,7 @@ class WordPrompterCreator:
                 end = min(start + max_line, num_sentences)
                 paragraphs.append(Paragraph(paragraph[start:end]))
                 start = end
-            return paragraphs
+            return paragraphs"""
 
     def process_line(self, texts):
         """한 줄 넘는 문장 분리"""
@@ -253,8 +266,38 @@ class WordPrompterCreator:
 
     def process_slide(self, texts):
         """최대 줄 수 넘으면 분리"""
+        return_slide = []
+        sentences = []
+        for text in texts:
+            if self.check_new_slide(text):
+                return_slide.append(sentences)
+                sentences = []
+            elif len(sentences) >= self.max_line:
+                return_slide.append(sentences)
+                sentences = []
+                sentences.append(text)
+            else:
+                sentences.append(text)
+        return return_slide
 
-    # 최대 글자, 최대 줄 수 넘는지 체크해서 넘으면 나누는 프로세스
+    def resize_slide(self, slides_list):
+        """슬라이드에 불필요하게 한 줄만 있는 경우 재조정하는 메서드"""
+        for i in range(len(slides_list)):
+            if len(slides_list[i]) == 1:
+                slides_list[i - 1].append(slides_list[i][0])
+        return slides_list
+
+    def remove_one_line_slide(self, slides_list):
+        """슬라이드에 한 줄만 있는 슬라이드 제거"""
+        return_slides = []
+        for slide in slides_list:
+            if len(slide) == 1:
+                continue
+            else:
+                return_slides.append(slide)
+        return return_slides
+
+    """# 최대 글자, 최대 줄 수 넘는지 체크해서 넘으면 나누는 프로세스
     def max_process(self, paragraph, slide):
         # 최대 글자 초과시 분리, 재조합 프로세스 실행
         if self.check_over_length(str(paragraph), self.max_byte):
@@ -277,13 +320,13 @@ class WordPrompterCreator:
         else:
             self.text = paragraph
 
-        """if self.check_over_line(paragraph):
-            paragraphs = self.split_over_line(paragraph, self.max_line)
-            for i in paragraphs:
-                self.slides.append(slide)
-                slide = self.ppt.add_new_slide()
-                self.write_on_slide(slide, i)
-            return slide"""
+        #if self.check_over_line(paragraph):
+            #paragraphs = self.split_over_line(paragraph, self.max_line)
+            #for i in paragraphs:
+                #self.slides.append(slide)
+                #slide = self.ppt.add_new_slide()
+                #self.write_on_slide(slide, i)
+            #return slide
 
         # 기존 슬라이드 줄 수 + 현재 텍스트의 줄수가 최대 줄 수 초과
         if self.check_over_line(paragraph, slide):
@@ -296,7 +339,7 @@ class WordPrompterCreator:
         # 최대 줄 수 미만이라 이어 붙이기
         else:
             self.write_on_slide(slide, paragraph)
-            return slide
+            return slide"""
 
     def check_new_slide(self, text):
         if isinstance(text, Sentence):
@@ -323,15 +366,25 @@ class WordPrompterCreator:
         """컴마를 기준으로 나눴을 때 이상적으로 나눠지면 나눠서 반환, 아니면 그대로 반환"""
         max_byte = self.max_byte
         comma_index = -1
-        while True:
-            for i in range(len(text)):
-                if "," in text[i]:
-                    comma_index = i
+        for i in range(len(text)):
+            if "," in str(text[i]):
+                comma_index = i
                 text1 = text[: comma_index + 1]
                 text2 = text[comma_index + 1 :]
 
+                # 각 부분이 최대 바이트 수를 초과하지 않는지 확인합니다.
+                if not self.check_over_length(
+                    text1, max_byte
+                ) and not self.check_over_length(text2, max_byte):
+                    # 두 부분의 길이 차이가 서로 2배 이상 나지 않는지 확인합니다.
+                    if abs(self.length(text1) - self.length(text2)) <= min(
+                        self.length(text1), self.length(text2)
+                    ):
+                        return [Sentence(text1), Sentence(text2)]
+        return text
+
     # 컴마를 기준으로 나눴을 때 이상적으로 나눠지면 나눠서 반환, 아니면 그대로 반환하는 메서드
-    def join_comma_ideal(self, text, max_byte):
+    """def join_comma_ideal(self, text, max_byte):
         comma_index = -1
         # text = str(text)
         while True:
@@ -355,7 +408,7 @@ class WordPrompterCreator:
                     return [Sentence(text1), Sentence(text2)]
 
         # 적절한 분할이 없으면 원래 텍스트를 반환합니다.
-        return [Sentence(text)]
+        return [Sentence(text)]"""
 
     def join(self, words, max_byte):
         """max_byte 길이 찰 때까지 쭉 이어붙이는 메서드\n
@@ -406,7 +459,20 @@ class WordPrompterCreator:
                     return_paragraph.add_sentence(i)
         return return_paragraph"""
 
-    # ppt에 텍스트 쓰기
+    def write_on_slide(self, texts_slides):
+        """ppt에 텍스트 쓰기"""
+        for slide_list in texts_slides:
+            slide = self.ppt.add_new_slide()
+            title_shape = slide.shapes.title
+            title_text_frame = title_shape.text_frame
+            ppt_paragraph = title_text_frame.paragraphs[-1]  # 마지막 단락 선택
+            for sentence in slide_list:
+                for word in sentence:
+                    self.add_text(ppt_paragraph, word)
+                run = ppt_paragraph.add_run()
+                run.text = "\n"
+
+    """# ppt에 텍스트 쓰기
     def write_on_slide(self, slide, paragraph):
         title_shape = slide.shapes.title
         title_text_frame = title_shape.text_frame
@@ -423,8 +489,9 @@ class WordPrompterCreator:
                 self.add_text(ppt_paragraph, word)
             run = ppt_paragraph.add_run()
             run.text = "\n"
+            """
 
-    # ppt 슬라이드에 글, 폰트, 색상, 굵은 글씨, 밑줄 적용해서 쓰기
+    """# ppt 슬라이드에 글, 폰트, 색상, 굵은 글씨, 밑줄 적용해서 쓰기
     def add_text(self, ppt_paragraph, word):
         slide_run = ppt_paragraph.add_run()
         slide_run.text = word.text + " "
@@ -448,9 +515,35 @@ class WordPrompterCreator:
 
         # 밑줄
         if not word.underline is None:
+            slide_run.font.underline = True"""
+
+    def add_text(self, ppt_paragraph, word):
+        """ppt 슬라이드에 글, 폰트, 색상, 굵은 글씨, 밑줄 적용해서 쓰기"""
+        slide_run = ppt_paragraph.add_run()
+        slide_run.text = str(word) + " "
+        slide_run.font.name = PPT_WORD.font
+        slide_run.font.size = Pt(PPT_WORD.size)
+        # 색상 없으면 기본 색상
+        if word.color is None:
+            slide_run.font.color.rgb = PPT_WORD.default_color
+        # 색상 있으면 그 색상 그대로
+        else:
+            # 워드에서 받은 객체랑 ppt에 쓸 객체가 서로 달라서 직접 변환 시켜줘야됨
+            color = str(word.color)
+            slide_run.font.color.rgb = RGBColor(
+                int(color[0:2], 16),
+                int(color[2:4], 16),
+                int(color[4:6], 16),
+            )
+        # 굵은 글씨
+        if not word.bold is None:
+            slide_run.font.bold = True
+
+        # 밑줄
+        if not word.underline is None:
             slide_run.font.underline = True
 
-    def reLine(self):
+    """def reLine(self):
         for i in range(len(self.slides)):
             print(self.slides[i].shapes.title.text)
             lines_num = self.count_lines(self.slides[i].shapes.title.text)
@@ -471,4 +564,4 @@ class WordPrompterCreator:
         while lines and lines[-1].strip() == "":
             lines.pop(-1)
         # 남은 줄의 개수를 반환
-        return len(lines)
+        return len(lines)"""

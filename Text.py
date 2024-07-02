@@ -100,6 +100,9 @@ class Sentence:
     def __iter__(self):
         return iter(self.words)
 
+    def __len__(self):
+        return len(self.words)
+
     def add_word(self, Word):
         if isinstance(Word, Iterable) and not isinstance(Word, str):
             self.words.extend(Word)
